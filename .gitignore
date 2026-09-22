@@ -1,0 +1,16 @@
+# Arduino IDE build output
+build/
+*.hex
+*.elf
+
+# OS-Müll
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Office-Sperrdateien
+~$*.xlsx
+~$*.docx
+
+# Editor
+.vscode/
