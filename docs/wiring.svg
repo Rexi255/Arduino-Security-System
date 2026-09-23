@@ -108,14 +108,14 @@
 <text x="150" y="36" class="lbl">RFID-RC522</text>
 <text x="238" y="36" class="sub">SPI · SS A0 · RST A1</text>
 <rect x="258" y="262" width="184" height="24" rx="12" fill="#3B1D22" stroke="#7F1D1D"/>
-<text x="350" y="278" font-size="11.5" font-weight="700" fill="#FECACA" text-anchor="middle">VCC an 3,3 V — nicht 5 V!</text>
+<text x="350" y="278" font-size="11.5" font-weight="700" fill="#FECACA" text-anchor="middle">VCC to 3.3 V — not 5 V!</text>
 
 <!-- ================= buzzer ================= -->
 <circle cx="470" cy="92" r="22" fill="#0B0D12" stroke="#374151" stroke-width="2"/>
 <circle cx="470" cy="92" r="5" fill="#374151"/>
 <circle class="ring" cx="470" cy="92" r="26" fill="none" stroke="#FACC15" stroke-width="2"/>
 <circle class="ring" cx="470" cy="92" r="26" fill="none" stroke="#FACC15" stroke-width="2" style="animation-delay:.7s"/>
-<text x="404" y="48" class="lbl">Passiver Buzzer</text>
+<text x="404" y="48" class="lbl">Passive buzzer</text>
 <text x="404" y="64" class="sub">S → D10 · tone()</text>
 
 <!-- ================= keypad ================= -->
@@ -132,11 +132,11 @@
   <text x="911" y="133">7</text><text x="947" y="133">8</text><text x="983" y="133">9</text><text x="1019" y="133">C</text>
   <text x="911" y="169">*</text><text x="947" y="169">0</text><text x="983" y="169">#</text><text x="1019" y="169">D</text>
 </g>
-<text x="1062" y="60" class="lbl">4x4-Keypad</text>
-<text x="1062" y="78" class="sub">Reihen D9–D6</text>
-<text x="1062" y="94" class="sub">Spalten D5–D2</text>
-<text x="1062" y="110" class="sub">eigener Matrix-</text>
-<text x="1062" y="124" class="sub">Scan, keine Lib</text>
+<text x="1062" y="60" class="lbl">4x4 keypad</text>
+<text x="1062" y="78" class="sub">rows D9–D6</text>
+<text x="1062" y="94" class="sub">columns D5–D2</text>
+<text x="1062" y="110" class="sub">own matrix scan,</text>
+<text x="1062" y="124" class="sub">no library</text>
 
 <!-- ================= OLED ================= -->
 <rect x="850" y="440" width="200" height="120" rx="8" fill="#1D4E89" stroke="#3B82F6" stroke-width="1.5"/>
@@ -144,7 +144,7 @@
 <g transform="translate(896,461) scale(1)" fill="#D7ECFF"><circle cx="56" cy="24" r="9.5"/><circle cx="72" cy="24" r="9.5"/><polygon points="48,29 80,29 64,48"/></g>
 <g fill="#E2B340"><circle cx="850" cy="470" r="3"/><circle cx="850" cy="490" r="3"/><circle cx="850" cy="510" r="3"/><circle cx="850" cy="530" r="3"/></g>
 <g font-size="8.5" font-weight="600" fill="#DBEAFE"><text x="857" y="473">SCL</text><text x="857" y="493">SDA</text><text x="857" y="513">VCC</text><text x="857" y="533">GND</text></g>
-<text x="850" y="582" class="lbl">OLED 1,3" SH1106</text>
+<text x="850" y="582" class="lbl">OLED 1.3" SH1106</text>
 <text x="850" y="598" class="sub">128x64 · I²C 0x3C · SDA A4 · SCL A5</text>
 
 <!-- ================= PIR ================= -->
@@ -153,7 +153,7 @@
 <g fill="none" stroke="#B6BDC8" stroke-width="1"><circle cx="646" cy="562" r="10"/><circle cx="646" cy="562" r="20"/></g>
 <circle class="ring" cx="646" cy="562" r="34" fill="none" stroke="#F97316" stroke-width="2"/>
 <circle cx="646" cy="520" r="3" fill="#E2B340"/>
-<text x="710" y="552" class="lbl">Bewegungsmelder</text>
+<text x="710" y="552" class="lbl">Motion sensor</text>
 <text x="710" y="568" class="sub">OUT → A2, active HIGH</text>
 
 <!-- ================= battery ================= -->
@@ -162,12 +162,12 @@
 <text x="392" y="360" font-size="18" font-weight="800" fill="#E5E7EB" text-anchor="middle">9V</text>
 
 <!-- ================= legend ================= -->
-<text x="60" y="520" font-size="26" font-weight="800" fill="#F1F5F9">Verdrahtung</text>
-<text x="60" y="546" class="sub" style="font-size:13px">Pins ausgereizt: frei sind nur noch D0/D1 (Serial).</text>
+<text x="60" y="520" font-size="26" font-weight="800" fill="#F1F5F9">Wiring</text>
+<text x="60" y="546" class="sub" style="font-size:13px">Every pin is used: only D0/D1 (serial) are free.</text>
 <g font-size="12.5" fill="#CBD5E1">
-  <circle cx="66" cy="570" r="5" fill="#F87171"/><text x="78" y="574">5 V → OLED, Buzzer, Bewegungsmelder</text>
-  <circle cx="66" cy="590" r="5" fill="#EF4444" stroke="#FECACA" stroke-width="1.5"/><text x="78" y="594">3,3 V → nur RC522</text>
-  <circle cx="66" cy="610" r="5" fill="#64748B"/><text x="78" y="614">GND gemeinsam für alle Bauteile</text>
+  <circle cx="66" cy="570" r="5" fill="#F87171"/><text x="78" y="574">5 V → OLED, buzzer, motion sensor</text>
+  <circle cx="66" cy="590" r="5" fill="#EF4444" stroke="#FECACA" stroke-width="1.5"/><text x="78" y="594">3.3 V → RC522 only</text>
+  <circle cx="66" cy="610" r="5" fill="#64748B"/><text x="78" y="614">GND shared by all parts</text>
 </g>
-<text x="1140" y="626" font-size="11" fill="#475569" text-anchor="end">Pulse zeigen die Signalrichtung · Schaltplan: Schaltplan/SCHALTPLAN.png</text>
+<text x="1140" y="626" font-size="11" fill="#475569" text-anchor="end">pulses show the signal direction · schematic: Schaltplan/SCHALTPLAN.png</text>
 </svg>

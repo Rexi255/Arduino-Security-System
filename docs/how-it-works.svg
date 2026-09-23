@@ -57,8 +57,8 @@
 <rect width="1200" height="520" rx="28" fill="url(#bg)"/>
 <rect width="1200" height="520" rx="28" fill="url(#dots)"/>
 
-<text x="340" y="62" font-size="30" font-weight="800" fill="#F1F5F9">So funktioniert's</text>
-<text x="340" y="90" font-size="15" fill="#94A3B8">Zustandsautomat aus Code/alarm_system/alarm_system.ino — PIN und Karte machen genau dasselbe</text>
+<text x="340" y="62" font-size="30" font-weight="800" fill="#F1F5F9">How it works</text>
+<text x="340" y="90" font-size="15" fill="#94A3B8">State machine from Code/alarm_system/alarm_system.ino — PIN and card do exactly the same</text>
 
 <!-- ============ arrows (drawn first, nodes sit on top) ============ -->
 <g fill="none" stroke="#64748B" stroke-width="2.5" marker-end="url(#arr)">
@@ -88,44 +88,44 @@
 </g>
 
 <g font-size="13.5" font-weight="600" fill="#CBD5E1" text-anchor="middle">
-  <text x="314" y="256">PIN / Karte</text>
-  <text x="604" y="256">nach 10 s</text>
-  <text x="894" y="256">Bewegung</text>
-  <text x="895" y="160">nach 30 s</text>
+  <text x="314" y="256">PIN / card</text>
+  <text x="604" y="256">after 10 s</text>
+  <text x="894" y="256">motion</text>
+  <text x="895" y="160">after 30 s</text>
 </g>
 <rect x="1000" y="112" width="160" height="34" rx="17" fill="#3B1D22" stroke="#7F1D1D"/>
-<text x="1080" y="134" font-size="13" font-weight="600" fill="#FECACA" text-anchor="middle">3 Fehlversuche</text>
-<g font-size="12.5" fill="#94A3B8"><text x="212" y="185">A + Admin-PIN + #</text><text x="212" y="201">* oder 20 s ohne Taste</text></g>
+<text x="1080" y="134" font-size="13" font-weight="600" fill="#FECACA" text-anchor="middle">3 wrong tries</text>
+<g font-size="12.5" fill="#94A3B8"><text x="212" y="185">A + admin PIN + #</text><text x="212" y="201">* or 20 s without a key</text></g>
 
 <rect x="400" y="412" width="410" height="30" rx="15" fill="#0E131C"/>
-<text x="605" y="432" font-size="13.5" font-weight="600" fill="#BBF7D0" text-anchor="middle">richtige PIN + # oder bekannte Karte → UNSCHARF</text>
+<text x="605" y="432" font-size="13.5" font-weight="600" fill="#BBF7D0" text-anchor="middle">correct PIN + # or known card → DISARMED</text>
 
 <!-- ============ nodes ============ -->
 <!-- admin menu -->
 <g>
   <rect x="80" y="112" width="180" height="56" rx="14" fill="#1E1B35" stroke="#4C3F8F" stroke-width="1.5"/>
-  <text x="170" y="136" font-size="13" font-weight="800" letter-spacing="1.5" fill="#C4B5FD" text-anchor="middle">ADMIN-MENÜ</text>
-  <text x="170" y="156" font-size="12" fill="#A5B4FC" text-anchor="middle">1 anlernen · 2 Liste/Löschen</text>
+  <text x="170" y="136" font-size="13" font-weight="800" letter-spacing="1.5" fill="#C4B5FD" text-anchor="middle">ADMIN MENU</text>
+  <text x="170" y="156" font-size="12" fill="#A5B4FC" text-anchor="middle">1 add · 2 list/delete</text>
 </g>
 
 <!-- disarmed -->
 <g>
   <rect x="65" y="208" width="210" height="124" rx="18" fill="#141B26" stroke="#263244" stroke-width="1.5"/>
   <rect class="on-dis" x="65" y="208" width="210" height="124" rx="18" fill="#4ADE80" fill-opacity=".07" stroke="#4ADE80" stroke-width="2.5"/>
-  <text x="170" y="234" font-size="13" font-weight="800" letter-spacing="1.5" fill="#4ADE80" text-anchor="middle">UNSCHARF</text>
+  <text x="170" y="234" font-size="13" font-weight="800" letter-spacing="1.5" fill="#4ADE80" text-anchor="middle">DISARMED</text>
   <rect x="131" y="245" width="78" height="40" rx="4" fill="#05070B" stroke="#1D4E89" stroke-width="2"/>
   <g transform="translate(131.6,245.8) scale(.6)" fill="#D7ECFF"><g class="beat"><use href="#heart"/></g></g>
-  <text x="170" y="314" font-size="12.5" fill="#94A3B8" text-anchor="middle">Bewegung wird ignoriert</text>
+  <text x="170" y="314" font-size="12.5" fill="#94A3B8" text-anchor="middle">motion is ignored</text>
 </g>
 
 <!-- exit delay -->
 <g>
   <rect x="355" y="208" width="210" height="124" rx="18" fill="#141B26" stroke="#263244" stroke-width="1.5"/>
   <rect class="on-exit" x="355" y="208" width="210" height="124" rx="18" fill="#7DD3FC" fill-opacity=".07" stroke="#7DD3FC" stroke-width="2.5"/>
-  <text x="460" y="234" font-size="13" font-weight="800" letter-spacing="1.5" fill="#7DD3FC" text-anchor="middle">AUSGANGSZEIT</text>
+  <text x="460" y="234" font-size="13" font-weight="800" letter-spacing="1.5" fill="#7DD3FC" text-anchor="middle">EXIT DELAY</text>
   <rect x="421" y="245" width="78" height="40" rx="4" fill="#05070B" stroke="#1D4E89" stroke-width="2"/>
   <g transform="translate(421.6,245.8) scale(.6)" fill="#05070B" color="#D7ECFF"><use href="#skull24"/><text x="64" y="61" font-size="16" font-weight="700" text-anchor="middle" font-family="ui-monospace, Consolas, monospace" fill="#D7ECFF">10s</text></g>
-  <text x="460" y="306" font-size="12.5" fill="#94A3B8" text-anchor="middle">Piep jede Sekunde</text>
+  <text x="460" y="306" font-size="12.5" fill="#94A3B8" text-anchor="middle">beep every second</text>
   <rect x="395" y="316" width="130" height="4" rx="2" fill="#263244"/>
   <rect class="bar-exit" x="395" y="316" width="130" height="4" rx="2" fill="#7DD3FC"/>
 </g>
@@ -134,10 +134,10 @@
 <g>
   <rect x="645" y="208" width="210" height="124" rx="18" fill="#141B26" stroke="#263244" stroke-width="1.5"/>
   <rect class="on-armed" x="645" y="208" width="210" height="124" rx="18" fill="#FBBF24" fill-opacity=".07" stroke="#FBBF24" stroke-width="2.5"/>
-  <text x="750" y="234" font-size="13" font-weight="800" letter-spacing="1.5" fill="#FBBF24" text-anchor="middle">SCHARF</text>
+  <text x="750" y="234" font-size="13" font-weight="800" letter-spacing="1.5" fill="#FBBF24" text-anchor="middle">ARMED</text>
   <rect x="711" y="245" width="78" height="40" rx="4" fill="#05070B" stroke="#1D4E89" stroke-width="2"/>
   <g transform="translate(711.6,245.8) scale(.6)" fill="#D7ECFF"><use href="#skull34"/></g>
-  <text x="750" y="314" font-size="12.5" fill="#94A3B8" text-anchor="middle">Bewegungsmelder aktiv</text>
+  <text x="750" y="314" font-size="12.5" fill="#94A3B8" text-anchor="middle">motion sensor active</text>
 </g>
 
 <!-- alarm -->
@@ -155,7 +155,7 @@
       <g fill="#05070B" color="#D7ECFF"><use href="#skull24"/><text x="64" y="61" font-size="16" font-weight="700" text-anchor="middle" font-family="ui-monospace, Consolas, monospace" fill="#D7ECFF">30s</text></g>
     </g>
   </g>
-  <text x="1040" y="306" font-size="12.5" fill="#94A3B8" text-anchor="middle">Sirene 2,5–3,7 kHz</text>
+  <text x="1040" y="306" font-size="12.5" fill="#94A3B8" text-anchor="middle">siren 2.5–3.7 kHz</text>
   <rect x="975" y="316" width="130" height="4" rx="2" fill="#263244"/>
   <rect class="bar-alarm" x="975" y="316" width="130" height="4" rx="2" fill="#F87171"/>
 </g>
@@ -163,11 +163,11 @@
 <!-- ============ keypad legend ============ -->
 <g font-size="13" font-weight="600">
   <rect x="65" y="466" width="96" height="30" rx="15" fill="#1E293B"/><text x="113" y="486" fill="#E2E8F0" text-anchor="middle">0–9  PIN</text>
-  <rect x="171" y="466" width="130" height="30" rx="15" fill="#1E293B"/><text x="236" y="486" fill="#E2E8F0" text-anchor="middle">#  bestätigen</text>
-  <rect x="311" y="466" width="104" height="30" rx="15" fill="#1E293B"/><text x="363" y="486" fill="#E2E8F0" text-anchor="middle">*  löschen</text>
-  <rect x="425" y="466" width="136" height="30" rx="15" fill="#1E1B35"/><text x="493" y="486" fill="#C4B5FD" text-anchor="middle">A  Admin-Menü</text>
-  <rect x="571" y="466" width="138" height="30" rx="15" fill="#1E293B"/><text x="640" y="486" fill="#E2E8F0" text-anchor="middle">B  RFID-Reset</text>
-  <rect x="719" y="466" width="200" height="30" rx="15" fill="#172554"/><text x="819" y="486" fill="#BFDBFE" text-anchor="middle">Karte = richtige PIN</text>
-  <text x="1135" y="486" font-weight="400" fill="#64748B" text-anchor="end">✖ auf dem OLED = falsche PIN</text>
+  <rect x="171" y="466" width="130" height="30" rx="15" fill="#1E293B"/><text x="236" y="486" fill="#E2E8F0" text-anchor="middle">#  confirm</text>
+  <rect x="311" y="466" width="104" height="30" rx="15" fill="#1E293B"/><text x="363" y="486" fill="#E2E8F0" text-anchor="middle">*  clear</text>
+  <rect x="425" y="466" width="136" height="30" rx="15" fill="#1E1B35"/><text x="493" y="486" fill="#C4B5FD" text-anchor="middle">A  admin menu</text>
+  <rect x="571" y="466" width="138" height="30" rx="15" fill="#1E293B"/><text x="640" y="486" fill="#E2E8F0" text-anchor="middle">B  RFID reset</text>
+  <rect x="719" y="466" width="200" height="30" rx="15" fill="#172554"/><text x="819" y="486" fill="#BFDBFE" text-anchor="middle">card = correct PIN</text>
+  <text x="1135" y="486" font-weight="400" fill="#64748B" text-anchor="end">✖ on the OLED = wrong PIN</text>
 </g>
 </svg>

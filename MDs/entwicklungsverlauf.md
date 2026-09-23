@@ -410,6 +410,23 @@ Source: GitHub Actions* aktiviert werden. Der Fehlerton dauert laut Sketch
 
 ---
 
+## 9. Prompt — README, Grafiken und Viewer auf Englisch (23.09.2026)
+
+> Ändere die Readme auf englisch
+>
+> Ja stelle auch den viewer auf englisch um und pushe alles dann
+
+### Antwort
+
+[../README.md](../README.md) ins Englische übersetzt (Inhalt unverändert,
+deutsche Doku-Links mit „(German)“ markiert). Alle Texte in den drei SVGs unter
+[../docs/](../docs/) und die komplette Oberfläche des 3D-Viewers (Seitenleiste,
+Tooltips, Beschriftungen, Kartenaufdrucke) sind jetzt englisch. Die OLED- und
+Serial-Texte waren schon englisch, weil sie aus dem Sketch stammen. Grafik und
+Viewer danach erneut gerendert und geprüft.
+
+---
+
 ## Anhang — Stand der Dateien
 
 | Datei | Zweck |

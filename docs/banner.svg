@@ -56,21 +56,21 @@
 <!-- left: title -->
 <text x="72" y="104" font-size="15" font-weight="700" letter-spacing="3" fill="#7DD3FC">LF07 · ARDUINO UNO R3</text>
 <text x="68" y="182" font-size="78" font-weight="800" fill="#F1F5F9" letter-spacing="-2">Projekt GAS</text>
-<text x="72" y="226" font-size="24" fill="#94A3B8">Mini-Sicherheitssystem mit Keypad,</text>
-<text x="72" y="256" font-size="24" fill="#94A3B8">RFID-Leser und Bewegungsmelder</text>
+<text x="72" y="226" font-size="24" fill="#94A3B8">Mini security system with keypad,</text>
+<text x="72" y="256" font-size="24" fill="#94A3B8">RFID reader and motion sensor</text>
 
 <rect x="72" y="288" width="112" height="36" rx="18" fill="#14532D"/><text x="90" y="312" font-size="16.5" font-weight="600" fill="#BBF7D0">PIN + #</text>
-<rect x="196" y="288" width="140" height="36" rx="18" fill="#1E3A8A"/><text x="214" y="312" font-size="16.5" font-weight="600" fill="#BFDBFE">RFID-Karte</text>
-<rect x="348" y="288" width="178" height="36" rx="18" fill="#713F12"/><text x="366" y="312" font-size="16.5" font-weight="600" fill="#FDE68A">Bewegungsmelder</text>
-<rect x="538" y="288" width="92" height="36" rx="18" fill="#7F1D1D"/><text x="556" y="312" font-size="16.5" font-weight="600" fill="#FECACA">Alarm</text>
+<rect x="196" y="288" width="140" height="36" rx="18" fill="#1E3A8A"/><text x="214" y="312" font-size="16.5" font-weight="600" fill="#BFDBFE">RFID card</text>
+<rect x="348" y="288" width="152" height="36" rx="18" fill="#713F12"/><text x="366" y="312" font-size="16.5" font-weight="600" fill="#FDE68A">Motion sensor</text>
+<rect x="512" y="288" width="92" height="36" rx="18" fill="#7F1D1D"/><text x="530" y="312" font-size="16.5" font-weight="600" fill="#FECACA">Alarm</text>
 
-<text x="72" y="368" font-size="15" fill="#64748B">SH1106-OLED · RC522 · PIR · passiver Buzzer · Karten im EEPROM</text>
+<text x="72" y="368" font-size="15" fill="#64748B">SH1106 OLED · RC522 · PIR · passive buzzer · cards in EEPROM</text>
 
 <!-- right: state badge -->
 <g transform="translate(1085,30)">
-  <g class="ph-heart"><rect x="-70" y="0" width="140" height="34" rx="17" fill="#14532D"/><circle cx="-48" cy="17" r="5" fill="#4ADE80"/><text x="-34" y="23" font-size="15" font-weight="700" letter-spacing="1.5" fill="#BBF7D0">UNSCHARF</text></g>
+  <g class="ph-heart"><rect x="-70" y="0" width="140" height="34" rx="17" fill="#14532D"/><circle cx="-48" cy="17" r="5" fill="#4ADE80"/><text x="-34" y="23" font-size="15" font-weight="700" letter-spacing="1.5" fill="#BBF7D0">DISARMED</text></g>
   <g class="ph-entry"><rect x="-70" y="0" width="140" height="34" rx="17" fill="#1E293B"/><circle cx="-48" cy="17" r="5" fill="#94A3B8"/><text x="-34" y="23" font-size="15" font-weight="700" letter-spacing="1.5" fill="#E2E8F0">PIN …</text></g>
-  <g class="ph-armed"><rect x="-70" y="0" width="140" height="34" rx="17" fill="#713F12"/><circle cx="-48" cy="17" r="5" fill="#FBBF24"/><text x="-34" y="23" font-size="15" font-weight="700" letter-spacing="1.5" fill="#FDE68A">SCHARF</text></g>
+  <g class="ph-armed"><rect x="-70" y="0" width="140" height="34" rx="17" fill="#713F12"/><circle cx="-48" cy="17" r="5" fill="#FBBF24"/><text x="-34" y="23" font-size="15" font-weight="700" letter-spacing="1.5" fill="#FDE68A">ARMED</text></g>
   <g class="ph-alarm"><rect x="-70" y="0" width="140" height="34" rx="17" fill="#7F1D1D"/><circle class="flash" cx="-48" cy="17" r="5" fill="#F87171"/><text x="-34" y="23" font-size="15" font-weight="700" letter-spacing="1.5" fill="#FECACA">ALARM</text></g>
 </g>
 
