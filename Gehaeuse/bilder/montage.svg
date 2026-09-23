@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 500" font-family="Segoe UI, Arial, sans-serif" font-size="14">
+  <title>Montage: Bedienteil außen, Sensorteil innen (Draufsicht)</title>
+  <rect width="720" height="500" fill="#ffffff"/>
+
+  <!-- room labels -->
+  <text x="620" y="60" text-anchor="middle" font-size="18" font-weight="bold" fill="#475569">FLUR (außen)</text>
+  <text x="620" y="470" text-anchor="middle" font-size="18" font-weight="bold" fill="#475569">RAUM (innen)</text>
+
+  <!-- PIR detection cone, inside only -->
+  <path d="M 150 232 L 20 425 A 260 260 0 0 0 330 420 Z" fill="#ef4444" fill-opacity="0.12" stroke="#ef4444" stroke-dasharray="6 4"/>
+  <text x="185" y="370" text-anchor="middle" fill="#b91c1c">Erfassungsbereich</text>
+  <text x="185" y="388" text-anchor="middle" fill="#b91c1c">PIR (ca. 110°, bis 7 m)</text>
+
+  <!-- wall with door opening -->
+  <rect x="0" y="190" width="300" height="36" fill="#cbd5e1" stroke="#64748b"/>
+  <rect x="520" y="190" width="200" height="36" fill="#cbd5e1" stroke="#64748b"/>
+  <text x="60" y="213" fill="#334155">Wand</text>
+  <!-- door frame -->
+  <rect x="292" y="186" width="12" height="44" fill="#a16207"/>
+  <rect x="512" y="186" width="12" height="44" fill="#a16207"/>
+  <!-- door leaf (closed) and swing -->
+  <rect x="304" y="222" width="208" height="8" fill="#d97706"/>
+  <path d="M 512 230 A 208 208 0 0 1 304 438" fill="none" stroke="#d97706" stroke-dasharray="4 4"/>
+  <text x="408" y="258" text-anchor="middle" fill="#92400e">Tür</text>
+
+  <!-- control unit outside -->
+  <rect x="200" y="172" width="70" height="18" fill="#f4b400" stroke="#92400e"/>
+  <text x="235" y="124" text-anchor="middle" font-weight="bold">Bedienteil</text>
+  <text x="235" y="143" text-anchor="middle" fill="#334155">Keypad · Display · RFID</text>
+  <text x="235" y="161" text-anchor="middle" fill="#334155">Buzzer · Arduino</text>
+
+  <!-- sensor unit inside -->
+  <rect x="130" y="226" width="40" height="12" fill="#f4b400" stroke="#92400e"/>
+  <circle cx="150" cy="240" r="5" fill="#ffffff" stroke="#64748b"/>
+  <text x="130" y="275" text-anchor="end" font-weight="bold">Sensorteil</text>
+
+  <!-- cable -->
+  <path d="M 225 190 L 225 208 L 150 208 L 150 226" fill="none" stroke="#16a34a" stroke-width="3"/>
+  <text x="400" y="118" fill="#15803d">3-adriges Kabel (5V, GND, OUT)</text>
+  <text x="400" y="136" fill="#15803d">durch die Wand oder außen herum</text>
+  <path d="M 396 128 Q 330 150 232 204" fill="none" stroke="#15803d" stroke-width="1"/>
+
+  <!-- person outside -->
+  <circle cx="235" cy="55" r="14" fill="#60a5fa"/>
+  <text x="260" y="52" fill="#1d4ed8">steht vor dem Bedienteil</text>
+  <text x="260" y="70" fill="#1d4ed8">→ Sensor sieht ihn NICHT (Wand dazwischen)</text>
+</svg>

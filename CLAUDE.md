@@ -22,6 +22,13 @@ Bewegungssensor erkennt Anwesenheit.
 - `MDs/` — Dokumentation (u. a. [MDs/entwicklungsverlauf.md](MDs/entwicklungsverlauf.md):
   Protokoll der Prompts und Antworten aus der Entwicklung mit Claude Code)
 - `Schaltplan/` — Schaltplan
+- `Gehaeuse/` — 3D-druckbares Gehäuse: `gehaeuse.scad` (OpenSCAD, parametrisch,
+  Teil über `part` wählen), fertige STLs in `stl/`, Bilder in `bilder/`.
+  Zwei Gehäuse: Bedienteil außen (Uno, Keypad, OLED, RC522, Buzzer) und
+  Sensorteil innen (HC-SR501), verbunden per 3-adrigem Kabel. Planung und
+  Druck-/Bauanleitung: [MDs/gehaeuse.md](MDs/gehaeuse.md). Modulmaße stammen
+  aus Datenblättern, nicht vom echten Aufbau. **Ändert sich ein Bauteil oder
+  dessen Position, STLs neu exportieren.**
 - `Teile.xlsx` — Bauteilliste
 - `docs/` — README-Grafiken als animierte SVGs (`banner.svg`, `how-it-works.svg`,
   `wiring.svg`, handgeschrieben, CSS-Animationen) und `docs/viewer/`: 3D-Modell

@@ -4,7 +4,7 @@ Dokumentation der Firmware-Entwicklung mit Claude Code (Claude Opus 5).
 Chronologisches Protokoll: Prompts (Jan Mummert) und Antworten (Claude).
 
 - Projekt: LF07 — Mini-Sicherheitssystem / Access Lock (Arduino Uno R3)
-- Daten der Sitzungen: 08.09.2026, 22.09.2026, 23.09.2026
+- Daten der Sitzungen: 08.09.2026, 22.09.2026, 23.09.2026 (inkl. Gehäuse)
 - Grundlagen im Kontext: [../CLAUDE.md](../CLAUDE.md), [aufbau.md](aufbau.md)
 
 ---
@@ -424,6 +424,41 @@ deutsche Doku-Links mit „(German)“ markiert). Alle Texte in den drei SVGs un
 Tooltips, Beschriftungen, Kartenaufdrucke) sind jetzt englisch. Die OLED- und
 Serial-Texte waren schon englisch, weil sie aus dem Sketch stammen. Grafik und
 Viewer danach erneut gerendert und geprüft.
+
+---
+
+## 10. Prompt — Gehäuse für den 3D-Druck (23.09.2026)
+
+> Plane und entwerfe ein Gehäuse. Das Gehäuse soll 3D gedruckt werden. Ich habe
+> 0 Erfahrung was sowas angeht.
+>
+> Wichtig ist, dass der Bewegungssensor auf der anderen seite sein muss, also
+> quasi ist alles vorne an einer tür/Türrahmen und auch der anderen seite ist
+> der bewegungssensor, sodass er halt erst was erkennt wenn man den raum
+> betritt und nicht auslöst wenn man nur an den türrahmen rantritt um es zu
+> entsperren.
+>
+> Plane erst das Gehäuse, dann entwerfe es
+
+### Antwort
+
+Zwei Gehäuse statt einem: **Bedienteil** außen neben der Tür (Uno, Keypad,
+OLED, RC522, Buzzer, 90 × 176 × 45 mm) und **Sensorteil** innen im Raum
+(HC-SR501, 52 × 44 × 35 mm), verbunden über ein 3-adriges Kabel. Der PIR sieht
+nur in direkter Sichtlinie, die Wand verdeckt also die Person am Bedienteil.
+
+- [gehaeuse.md](gehaeuse.md): Planung (Konzept, Aufteilung, Montageort) und
+  Einsteiger-Anleitung (Nachmessen, Slicen, Einkaufsliste, Zusammenbau,
+  Anpassen in OpenSCAD).
+- [../Gehaeuse/gehaeuse.scad](../Gehaeuse/gehaeuse.scad): parametrisches
+  OpenSCAD-Modell, alle Maße oben als Variablen.
+- [../Gehaeuse/stl/](../Gehaeuse/stl/): vier fertige Druckteile, bereits in
+  Druckrichtung, ohne Stützstrukturen druckbar.
+
+Mit OpenSCAD 2021.01 gerendert: alle vier STLs sind geschlossen („Simple:
+yes“). Die Frontansicht wurde auf nicht gespiegelte Gravuren geprüft.
+**Offener Punkt:** Die Modulmaße stammen aus Datenblättern und sind nicht am
+echten Aufbau gemessen. Außerdem ist noch nichts gedruckt.
 
 ---
 
