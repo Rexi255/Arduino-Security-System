@@ -105,11 +105,6 @@ The model uses demo PINs (`1234` and admin `0000`), not the real ones from the
 sketch. To use it offline, just open
 [docs/viewer/index.html](docs/viewer/index.html) in your browser.
 
-> **One-time setup:** In the repo, go to *Settings → Pages → Source* and choose
-> "GitHub Actions". After that,
-> [.github/workflows/pages.yml](.github/workflows/pages.yml) publishes the
-> model automatically on every push to `main`.
-
 ## Pitfalls we solved
 
 - **The OLED is an SH1106, not an SSD1306.** With the SSD1306 library it stays blank or only shows stripes. The right class is `Adafruit_SH1106G`.
