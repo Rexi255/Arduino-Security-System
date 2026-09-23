@@ -23,6 +23,12 @@ Bewegungssensor erkennt Anwesenheit.
   Protokoll der Prompts und Antworten aus der Entwicklung mit Claude Code)
 - `Schaltplan/` — Schaltplan
 - `Teile.xlsx` — Bauteilliste
+- `docs/` — README-Grafiken als animierte SVGs (`banner.svg`, `how-it-works.svg`,
+  `wiring.svg`, handgeschrieben, CSS-Animationen) und `docs/viewer/`: 3D-Modell
+  (three.js, `three.min.js` liegt bei) mit nachgebauter Firmware-Logik aus
+  `alarm_system.ino` (Demo-PINs `1234`/`0000`). Wird per
+  `.github/workflows/pages.yml` auf GitHub Pages veröffentlicht. **Ändert sich
+  Verhalten, Zeit oder Pin in der Firmware, den Viewer mitziehen.**
 
 ## Angeschlossene Bauteile & Pin-Belegung
 

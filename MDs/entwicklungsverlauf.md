@@ -4,7 +4,7 @@ Dokumentation der Firmware-Entwicklung mit Claude Code (Claude Opus 5).
 Chronologisches Protokoll: Prompts (Jan Mummert) und Antworten (Claude).
 
 - Projekt: LF07 — Mini-Sicherheitssystem / Access Lock (Arduino Uno R3)
-- Daten der Sitzungen: 08.09.2026, 22.09.2026
+- Daten der Sitzungen: 08.09.2026, 22.09.2026, 23.09.2026
 - Grundlagen im Kontext: [../CLAUDE.md](../CLAUDE.md), [aufbau.md](aufbau.md)
 
 ---
@@ -361,6 +361,52 @@ oder gar nicht — Antwort: nur manuell. Umgesetzt in
 `arduino-cli` auf dem Rechner) — vor dem nächsten Hochladen in der Arduino
 IDE prüfen, außerdem am echten Aufbau testen, ob `B` den Reader nach einem
 gezielten Verbindungsabbruch (z. B. RST kurz trennen) tatsächlich wiederbelebt.
+
+---
+
+## 8. Prompt — 3D-Animationen und neue README (23.09.2026)
+
+> Schaue dir dieses Github Repo von einem freund an:
+> https://github.com/BBZ-AIFS51/LF7-MiniCasino
+>
+> Ich möchte das in dem Github repo von diesem Projekt auch so coole 3d
+> animationen wie bei denen sind. Verwende dafür unsere dokumentation. Dabei
+> kannst du Auch gleich die README unseres Projekts einmal komplett überarbeiten
+
+### Antwort
+
+Das MiniCasino-Repo nutzt zwei Dinge: animierte SVG-Grafiken direkt in der
+README (CSS-Animationen, laufen auch auf GitHub) und einen three.js-3D-Viewer,
+der über GitHub Pages läuft. Beides gibt es jetzt auch bei uns, aufgebaut aus
+CLAUDE.md, aufbau.md, anleitung.md, dem Schaltplan und der Firmware:
+
+- [../docs/banner.svg](../docs/banner.svg): isometrisches Gerät, das in 10 s
+  einmal UNSCHARF → PIN → SCHARF → ALARM durchläuft. Herz und Totenkopf mit
+  denselben Koordinaten wie `drawHeart()`/`drawSkull()`, die Alarm-Anzeige
+  invertiert wie im Sketch, dazu eine schwebende RFID-Karte.
+- [../docs/how-it-works.svg](../docs/how-it-works.svg): Zustandsautomat mit
+  laufenden Pfeilen, dem jeweils aktiven Zustand und Fortschrittsbalken für
+  10 s / 30 s.
+- [../docs/wiring.svg](../docs/wiring.svg): Verdrahtung am Uno, Signalpulse
+  zeigen die Richtung, Hinweis auf 3,3 V beim RC522.
+- [../docs/viewer/index.html](../docs/viewer/index.html): 3D-Modell des
+  Steckbrett-Aufbaus nach dem Schaltplan. Die Firmware-Logik ist 1:1 nach
+  JavaScript übertragen (Zustände, Zeiten, Töne über WebAudio, OLED als
+  128x64-Framebuffer mit denselben GFX-Aufrufen, Admin-Menü, EEPROM im
+  localStorage). Tasten, Karten und PIR sind anklickbar, Signalpulse laufen
+  über die Kabel. Im Modell gelten Demo-PINs (`1234`/`0000`), nicht die echten.
+- [../.github/workflows/pages.yml](../.github/workflows/pages.yml): veröffentlicht
+  den Viewer auf GitHub Pages.
+- [../README.md](../README.md) komplett neu geschrieben.
+
+Getestet: SVGs und Viewer im Edge (headless) gerendert, die Viewer-Logik mit
+einem Skript durchgespielt (PIN, Ausgangszeit, Bewegung → Alarm,
+3 Fehlversuche, Admin-PIN, Karte anlernen/löschen, 7-Byte-UID abgelehnt,
+Eingabe-Timeout). Alle Prüfungen sind bestanden.
+
+**Offener Punkt:** GitHub Pages muss einmalig unter *Settings → Pages →
+Source: GitHub Actions* aktiviert werden. Der Fehlerton dauert laut Sketch
+`ERROR_TONE_MS = 2000` (2 s), Kommentare und CLAUDE.md sagen noch 3 s.
 
 ---
 

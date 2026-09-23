@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" width="1200" height="520" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+<style>
+  /* 12 s cycle: disarmed 0-22 %, exit delay 22-44 %, armed 44-64 %, alarm 64-88 %, back 88-100 % */
+  .flow { stroke-dasharray: 6 8; animation: flow 1s linear infinite; }
+  @keyframes flow { to { stroke-dashoffset: -28 } }
+
+  .on-dis   { opacity: 0; animation: onDis 12s linear infinite; }
+  .on-exit  { opacity: 0; animation: onExit 12s linear infinite; }
+  .on-armed { opacity: 0; animation: onArmed 12s linear infinite; }
+  .on-alarm { opacity: 0; animation: onAlarm 12s linear infinite; }
+  @keyframes onDis   { 0%,21.9% { opacity: 1 } 22%,87.9% { opacity: 0 } 88%,100% { opacity: 1 } }
+  @keyframes onExit  { 0%,21.9% { opacity: 0 } 22%,43.9% { opacity: 1 } 44%,100% { opacity: 0 } }
+  @keyframes onArmed { 0%,43.9% { opacity: 0 } 44%,63.9% { opacity: 1 } 64%,100% { opacity: 0 } }
+  @keyframes onAlarm { 0%,63.9% { opacity: 0 } 64%,87.9% { opacity: 1 } 88%,100% { opacity: 0 } }
+
+  /* a short bright pulse on the arrow that is taken */
+  .hit1 { opacity: 0; animation: hit1 12s linear infinite; }
+  .hit2 { opacity: 0; animation: hit2 12s linear infinite; }
+  .hit3 { opacity: 0; animation: hit3 12s linear infinite; }
+  .hit4 { opacity: 0; animation: hit4 12s linear infinite; }
+  @keyframes hit1 { 0%,19% { opacity: 0 } 21%,23% { opacity: 1 } 26%,100% { opacity: 0 } }
+  @keyframes hit2 { 0%,41% { opacity: 0 } 43%,45% { opacity: 1 } 48%,100% { opacity: 0 } }
+  @keyframes hit3 { 0%,61% { opacity: 0 } 63%,65% { opacity: 1 } 68%,100% { opacity: 0 } }
+  @keyframes hit4 { 0%,85% { opacity: 0 } 87%,90% { opacity: 1 } 93%,100% { opacity: 0 } }
+
+  .bar-exit  { transform-box: fill-box; transform-origin: left; animation: barExit 12s linear infinite; }
+  .bar-alarm { transform-box: fill-box; transform-origin: left; animation: barAlarm 12s linear infinite; }
+  @keyframes barExit  { 0%,22% { transform: scaleX(0) } 44% { transform: scaleX(1) } 44.1%,100% { transform: scaleX(0) } }
+  @keyframes barAlarm { 0%,64% { transform: scaleX(0) } 88% { transform: scaleX(1) } 88.1%,100% { transform: scaleX(0) } }
+
+  .flash { animation: flash .5s steps(1) infinite; }
+  @keyframes flash { 0% { opacity: 1 } 50% { opacity: 0 } }
+  .beat { animation: beat 1.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes beat { 0%,100% { transform: scale(1) } 15% { transform: scale(1.12) } 30% { transform: scale(1) } 45% { transform: scale(1.08) } }
+</style>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0E131C"/><stop offset="1" stop-color="#18202E"/></linearGradient>
+  <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#64748B"/></marker>
+  <marker id="arrHot" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#F1F5F9"/></marker>
+
+  <!-- OLED icons, drawn with the same primitives and coordinates as the firmware -->
+  <g id="heart"><circle cx="56" cy="24" r="9.5"/><circle cx="72" cy="24" r="9.5"/><polygon points="48,29 80,29 64,48"/></g>
+  <g id="skull34">
+    <rect x="45" y="12" width="38" height="32" rx="12"/><rect x="53" y="38" width="22" height="13" rx="4"/>
+    <circle cx="55" cy="27" r="6.5" fill="#05070B"/><circle cx="73" cy="27" r="6.5" fill="#05070B"/>
+    <polygon points="64,33 61,38 67,38" fill="#05070B"/>
+    <g fill="#05070B"><rect x="53" y="39" width="22" height="1"/><rect x="57" y="40" width="1" height="11"/><rect x="62" y="40" width="1" height="11"/><rect x="67" y="40" width="1" height="11"/><rect x="72" y="40" width="1" height="11"/></g>
+  </g>
+  <g id="skull24">
+    <rect x="45" y="2" width="38" height="32" rx="12" fill="currentColor"/><rect x="53" y="28" width="22" height="13" rx="4" fill="currentColor"/>
+    <circle cx="55" cy="17" r="6.5"/><circle cx="73" cy="17" r="6.5"/>
+    <polygon points="64,23 61,28 67,28"/>
+  </g>
+  <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.2" fill="#FFFFFF" opacity=".05"/></pattern>
+</defs>
+
+<rect width="1200" height="520" rx="28" fill="url(#bg)"/>
+<rect width="1200" height="520" rx="28" fill="url(#dots)"/>
+
+<text x="340" y="62" font-size="30" font-weight="800" fill="#F1F5F9">So funktioniert's</text>
+<text x="340" y="90" font-size="15" fill="#94A3B8">Zustandsautomat aus Code/alarm_system/alarm_system.ino — PIN und Karte machen genau dasselbe</text>
+
+<!-- ============ arrows (drawn first, nodes sit on top) ============ -->
+<g fill="none" stroke="#64748B" stroke-width="2.5" marker-end="url(#arr)">
+  <path class="flow" d="M 277 270 H 351"/>
+  <path class="flow" d="M 567 270 H 641"/>
+  <path class="flow" d="M 857 270 H 931"/>
+  <!-- alarm over -> armed again -->
+  <path class="flow" d="M 1000 206 Q 895 140 792 206"/>
+  <!-- three wrong tries -> alarm -->
+  <path class="flow" d="M 1080 146 V 204"/>
+  <!-- back to disarmed -->
+  <path class="flow" d="M 1040 334 V 400 H 170 V 338"/>
+  <!-- admin menu -->
+  <path class="flow" d="M 140 206 V 170"/>
+  <path class="flow" d="M 200 170 V 206"/>
+</g>
+<g fill="none" stroke="#64748B" stroke-width="2.5">
+  <path class="flow" d="M 460 334 V 400"/>
+  <path class="flow" d="M 750 334 V 400"/>
+</g>
+<!-- highlighted transitions -->
+<g fill="none" stroke="#F1F5F9" stroke-width="3.5" marker-end="url(#arrHot)">
+  <path class="hit1" d="M 277 270 H 351"/>
+  <path class="hit2" d="M 567 270 H 641"/>
+  <path class="hit3" d="M 857 270 H 931"/>
+  <path class="hit4" d="M 1040 334 V 400 H 170 V 338"/>
+</g>
+
+<g font-size="13.5" font-weight="600" fill="#CBD5E1" text-anchor="middle">
+  <text x="314" y="256">PIN / Karte</text>
+  <text x="604" y="256">nach 10 s</text>
+  <text x="894" y="256">Bewegung</text>
+  <text x="895" y="160">nach 30 s</text>
+</g>
+<rect x="1000" y="112" width="160" height="34" rx="17" fill="#3B1D22" stroke="#7F1D1D"/>
+<text x="1080" y="134" font-size="13" font-weight="600" fill="#FECACA" text-anchor="middle">3 Fehlversuche</text>
+<g font-size="12.5" fill="#94A3B8"><text x="212" y="185">A + Admin-PIN + #</text><text x="212" y="201">* oder 20 s ohne Taste</text></g>
+
+<rect x="400" y="412" width="410" height="30" rx="15" fill="#0E131C"/>
+<text x="605" y="432" font-size="13.5" font-weight="600" fill="#BBF7D0" text-anchor="middle">richtige PIN + # oder bekannte Karte → UNSCHARF</text>
+
+<!-- ============ nodes ============ -->
+<!-- admin menu -->
+<g>
+  <rect x="80" y="112" width="180" height="56" rx="14" fill="#1E1B35" stroke="#4C3F8F" stroke-width="1.5"/>
+  <text x="170" y="136" font-size="13" font-weight="800" letter-spacing="1.5" fill="#C4B5FD" text-anchor="middle">ADMIN-MENÜ</text>
+  <text x="170" y="156" font-size="12" fill="#A5B4FC" text-anchor="middle">1 anlernen · 2 Liste/Löschen</text>
+</g>
+
+<!-- disarmed -->
+<g>
+  <rect x="65" y="208" width="210" height="124" rx="18" fill="#141B26" stroke="#263244" stroke-width="1.5"/>
+  <rect class="on-dis" x="65" y="208" width="210" height="124" rx="18" fill="#4ADE80" fill-opacity=".07" stroke="#4ADE80" stroke-width="2.5"/>
+  <text x="170" y="234" font-size="13" font-weight="800" letter-spacing="1.5" fill="#4ADE80" text-anchor="middle">UNSCHARF</text>
+  <rect x="131" y="245" width="78" height="40" rx="4" fill="#05070B" stroke="#1D4E89" stroke-width="2"/>
+  <g transform="translate(131.6,245.8) scale(.6)" fill="#D7ECFF"><g class="beat"><use href="#heart"/></g></g>
+  <text x="170" y="314" font-size="12.5" fill="#94A3B8" text-anchor="middle">Bewegung wird ignoriert</text>
+</g>
+
+<!-- exit delay -->
+<g>
+  <rect x="355" y="208" width="210" height="124" rx="18" fill="#141B26" stroke="#263244" stroke-width="1.5"/>
+  <rect class="on-exit" x="355" y="208" width="210" height="124" rx="18" fill="#7DD3FC" fill-opacity=".07" stroke="#7DD3FC" stroke-width="2.5"/>
+  <text x="460" y="234" font-size="13" font-weight="800" letter-spacing="1.5" fill="#7DD3FC" text-anchor="middle">AUSGANGSZEIT</text>
+  <rect x="421" y="245" width="78" height="40" rx="4" fill="#05070B" stroke="#1D4E89" stroke-width="2"/>
+  <g transform="translate(421.6,245.8) scale(.6)" fill="#05070B" color="#D7ECFF"><use href="#skull24"/><text x="64" y="61" font-size="16" font-weight="700" text-anchor="middle" font-family="ui-monospace, Consolas, monospace" fill="#D7ECFF">10s</text></g>
+  <text x="460" y="306" font-size="12.5" fill="#94A3B8" text-anchor="middle">Piep jede Sekunde</text>
+  <rect x="395" y="316" width="130" height="4" rx="2" fill="#263244"/>
+  <rect class="bar-exit" x="395" y="316" width="130" height="4" rx="2" fill="#7DD3FC"/>
+</g>
+
+<!-- armed -->
+<g>
+  <rect x="645" y="208" width="210" height="124" rx="18" fill="#141B26" stroke="#263244" stroke-width="1.5"/>
+  <rect class="on-armed" x="645" y="208" width="210" height="124" rx="18" fill="#FBBF24" fill-opacity=".07" stroke="#FBBF24" stroke-width="2.5"/>
+  <text x="750" y="234" font-size="13" font-weight="800" letter-spacing="1.5" fill="#FBBF24" text-anchor="middle">SCHARF</text>
+  <rect x="711" y="245" width="78" height="40" rx="4" fill="#05070B" stroke="#1D4E89" stroke-width="2"/>
+  <g transform="translate(711.6,245.8) scale(.6)" fill="#D7ECFF"><use href="#skull34"/></g>
+  <text x="750" y="314" font-size="12.5" fill="#94A3B8" text-anchor="middle">Bewegungsmelder aktiv</text>
+</g>
+
+<!-- alarm -->
+<g>
+  <rect x="935" y="208" width="210" height="124" rx="18" fill="#141B26" stroke="#263244" stroke-width="1.5"/>
+  <rect class="on-alarm" x="935" y="208" width="210" height="124" rx="18" fill="#F87171" fill-opacity=".1" stroke="#F87171" stroke-width="2.5"/>
+  <text x="1040" y="234" font-size="13" font-weight="800" letter-spacing="1.5" fill="#F87171" text-anchor="middle">ALARM</text>
+  <rect x="1001" y="245" width="78" height="40" rx="4" fill="#05070B" stroke="#1D4E89" stroke-width="2"/>
+  <g transform="translate(1001.6,245.8) scale(.6)">
+    <g class="flash">
+      <rect x="0" y="0" width="128" height="64" fill="#D7ECFF"/>
+      <g fill="#D7ECFF" color="#05070B"><use href="#skull24"/><text x="64" y="61" font-size="16" font-weight="700" text-anchor="middle" font-family="ui-monospace, Consolas, monospace" fill="#05070B">30s</text></g>
+    </g>
+    <g class="flash" style="animation-delay:-.25s">
+      <g fill="#05070B" color="#D7ECFF"><use href="#skull24"/><text x="64" y="61" font-size="16" font-weight="700" text-anchor="middle" font-family="ui-monospace, Consolas, monospace" fill="#D7ECFF">30s</text></g>
+    </g>
+  </g>
+  <text x="1040" y="306" font-size="12.5" fill="#94A3B8" text-anchor="middle">Sirene 2,5–3,7 kHz</text>
+  <rect x="975" y="316" width="130" height="4" rx="2" fill="#263244"/>
+  <rect class="bar-alarm" x="975" y="316" width="130" height="4" rx="2" fill="#F87171"/>
+</g>
+
+<!-- ============ keypad legend ============ -->
+<g font-size="13" font-weight="600">
+  <rect x="65" y="466" width="96" height="30" rx="15" fill="#1E293B"/><text x="113" y="486" fill="#E2E8F0" text-anchor="middle">0–9  PIN</text>
+  <rect x="171" y="466" width="130" height="30" rx="15" fill="#1E293B"/><text x="236" y="486" fill="#E2E8F0" text-anchor="middle">#  bestätigen</text>
+  <rect x="311" y="466" width="104" height="30" rx="15" fill="#1E293B"/><text x="363" y="486" fill="#E2E8F0" text-anchor="middle">*  löschen</text>
+  <rect x="425" y="466" width="136" height="30" rx="15" fill="#1E1B35"/><text x="493" y="486" fill="#C4B5FD" text-anchor="middle">A  Admin-Menü</text>
+  <rect x="571" y="466" width="138" height="30" rx="15" fill="#1E293B"/><text x="640" y="486" fill="#E2E8F0" text-anchor="middle">B  RFID-Reset</text>
+  <rect x="719" y="466" width="200" height="30" rx="15" fill="#172554"/><text x="819" y="486" fill="#BFDBFE" text-anchor="middle">Karte = richtige PIN</text>
+  <text x="1135" y="486" font-weight="400" fill="#64748B" text-anchor="end">✖ auf dem OLED = falsche PIN</text>
+</g>
+</svg>

@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" width="1200" height="640" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+<style>
+  .w  { fill: none; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; opacity: .55; }
+  /* a bright pulse travels along each wire, out of the Uno or into it */
+  .p  { fill: none; stroke-width: 4.5; stroke-linecap: round; stroke-dasharray: 16 400; animation: out 2.4s linear infinite; }
+  .in { animation-name: in; }
+  @keyframes out { from { stroke-dashoffset: 0 } to { stroke-dashoffset: -416 } }
+  @keyframes in  { from { stroke-dashoffset: -416 } to { stroke-dashoffset: 0 } }
+  .d1 { animation-delay: -.3s } .d2 { animation-delay: -.6s } .d3 { animation-delay: -.9s }
+  .d4 { animation-delay: -1.2s } .d5 { animation-delay: -1.5s } .d6 { animation-delay: -1.8s } .d7 { animation-delay: -2.1s }
+  .ring { animation: ring 1.4s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes ring { 0% { transform: scale(.5); opacity: .8 } 100% { transform: scale(1.5); opacity: 0 } }
+  .lbl { font-size: 13px; font-weight: 700; fill: #E2E8F0; }
+  .sub { font-size: 11.5px; fill: #94A3B8; }
+  .pin { font-size: 9px; font-weight: 600; fill: #CBD5E1; text-anchor: middle; }
+</style>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0E131C"/><stop offset="1" stop-color="#18202E"/></linearGradient>
+  <radialGradient id="dome" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#C9CFD8"/></radialGradient>
+  <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.2" fill="#FFFFFF" opacity=".05"/></pattern>
+</defs>
+
+<rect width="1200" height="640" rx="28" fill="url(#bg)"/>
+<rect width="1200" height="640" rx="28" fill="url(#dots)"/>
+
+<!-- ================= wires (base + travelling pulse) ================= -->
+<!-- keypad: rows R1..R4 = D9..D6, columns C1..C4 = D5..D2 -->
+<path class="w" stroke="#86EFAC" d="M572 212 V60 H860"/>
+<path class="w" stroke="#A78BFA" d="M590 212 V74 H860"/>
+<path class="w" stroke="#BEF264" d="M608 212 V88 H860"/>
+<path class="w" stroke="#F0ABFC" d="M626 212 V102 H860"/>
+<path class="w" stroke="#5EEAD4" d="M644 212 V116 H860"/>
+<path class="w" stroke="#60A5FA" d="M662 212 V130 H860"/>
+<path class="w" stroke="#84CC16" d="M680 212 V144 H860"/>
+<path class="w" stroke="#2DD4BF" d="M698 212 V158 H860"/>
+<path class="p in"    stroke="#86EFAC" d="M572 212 V60 H860"/>
+<path class="p in d1" stroke="#A78BFA" d="M590 212 V74 H860"/>
+<path class="p in d2" stroke="#BEF264" d="M608 212 V88 H860"/>
+<path class="p in d3" stroke="#F0ABFC" d="M626 212 V102 H860"/>
+<path class="p d4"    stroke="#5EEAD4" d="M644 212 V116 H860"/>
+<path class="p d5"    stroke="#60A5FA" d="M662 212 V130 H860"/>
+<path class="p d6"    stroke="#84CC16" d="M680 212 V144 H860"/>
+<path class="p d7"    stroke="#2DD4BF" d="M698 212 V158 H860"/>
+
+<!-- RC522: SPI on D11/D12/D13, SS = A0, RST = A1, VCC = 3.3 V -->
+<path class="w" stroke="#22D3EE" d="M536 212 V160 H330"/>
+<path class="w" stroke="#34D399" d="M518 212 V172 H330"/>
+<path class="w" stroke="#A3E635" d="M500 212 V184 H330"/>
+<path class="w" stroke="#EF4444" d="M500 408 V440 H250 V200"/>
+<path class="w" stroke="#FB923C" d="M610 408 V455 H230 V200"/>
+<path class="w" stroke="#F472B6" d="M628 408 V470 H210 V200"/>
+<path class="p"       stroke="#22D3EE" d="M536 212 V160 H330"/>
+<path class="p in d3" stroke="#34D399" d="M518 212 V172 H330"/>
+<path class="p d5"    stroke="#A3E635" d="M500 212 V184 H330" style="animation-duration:1.2s"/>
+<path class="p d2"    stroke="#EF4444" d="M500 408 V440 H250 V200" style="animation-duration:3.6s"/>
+<path class="p d4"    stroke="#FB923C" d="M610 408 V455 H230 V200"/>
+<path class="p d6"    stroke="#F472B6" d="M628 408 V470 H210 V200" style="animation-duration:3.6s"/>
+
+<!-- buzzer on D10 -->
+<path class="w" stroke="#FACC15" d="M554 212 V130 H470 V114"/>
+<path class="p d1" stroke="#FACC15" d="M554 212 V130 H470 V114" style="animation-duration:1.6s"/>
+
+<!-- PIR OUT on A2 -->
+<path class="w" stroke="#F97316" d="M646 408 V520"/>
+<path class="p in d2" stroke="#F97316" d="M646 408 V520" style="animation-duration:1.4s"/>
+
+<!-- OLED I2C: SCL = A5, SDA = A4 -->
+<path class="w" stroke="#E879F9" d="M700 408 V470 H850"/>
+<path class="w" stroke="#FB7185" d="M682 408 V490 H850"/>
+<path class="p"       stroke="#E879F9" d="M700 408 V470 H850" style="animation-duration:1.2s"/>
+<path class="p in d4" stroke="#FB7185" d="M682 408 V490 H850" style="animation-duration:1.8s"/>
+
+<!-- 9 V battery to the barrel jack -->
+<path class="w" stroke="#EF4444" d="M424 356 H462"/>
+<path class="w" stroke="#64748B" d="M424 372 H462"/>
+
+<!-- ================= Arduino Uno ================= -->
+<rect x="470" y="200" width="260" height="220" rx="12" fill="#12467F" stroke="#2563A8" stroke-width="2"/>
+<rect x="452" y="232" width="34" height="40" rx="3" fill="#A8B3C2"/>
+<rect x="456" y="346" width="30" height="36" rx="4" fill="#111827"/>
+<rect x="560" y="290" width="92" height="30" rx="3" fill="#0B1220"/>
+<g fill="#6B7280"><rect x="566" y="286" width="3" height="4"/><rect x="578" y="286" width="3" height="4"/><rect x="590" y="286" width="3" height="4"/><rect x="602" y="286" width="3" height="4"/><rect x="614" y="286" width="3" height="4"/><rect x="626" y="286" width="3" height="4"/><rect x="638" y="286" width="3" height="4"/>
+<rect x="566" y="320" width="3" height="4"/><rect x="578" y="320" width="3" height="4"/><rect x="590" y="320" width="3" height="4"/><rect x="602" y="320" width="3" height="4"/><rect x="614" y="320" width="3" height="4"/><rect x="626" y="320" width="3" height="4"/><rect x="638" y="320" width="3" height="4"/></g>
+<text x="606" y="310" font-size="10" font-weight="700" fill="#64748B" text-anchor="middle">ATmega328P</text>
+<text x="690" y="352" font-size="22" font-weight="800" fill="#E2E8F0" text-anchor="middle" font-style="italic">UNO</text>
+<text x="690" y="368" font-size="9" font-weight="700" letter-spacing="1" fill="#93C5FD" text-anchor="middle">ARDUINO R3</text>
+
+<!-- digital header -->
+<rect x="488" y="205" width="222" height="14" rx="2" fill="#0B0F17"/>
+<g fill="#E2B340"><circle cx="500" cy="212" r="3"/><circle cx="518" cy="212" r="3"/><circle cx="536" cy="212" r="3"/><circle cx="554" cy="212" r="3"/><circle cx="572" cy="212" r="3"/><circle cx="590" cy="212" r="3"/><circle cx="608" cy="212" r="3"/><circle cx="626" cy="212" r="3"/><circle cx="644" cy="212" r="3"/><circle cx="662" cy="212" r="3"/><circle cx="680" cy="212" r="3"/><circle cx="698" cy="212" r="3"/></g>
+<g class="pin"><text x="500" y="232">13</text><text x="518" y="232">12</text><text x="536" y="232">11</text><text x="554" y="232">10</text><text x="572" y="232">9</text><text x="590" y="232">8</text><text x="608" y="232">7</text><text x="626" y="232">6</text><text x="644" y="232">5</text><text x="662" y="232">4</text><text x="680" y="232">3</text><text x="698" y="232">2</text></g>
+<text x="599" y="246" font-size="8.5" letter-spacing="2" fill="#93C5FD" text-anchor="middle">DIGITAL</text>
+
+<!-- power + analog header -->
+<rect x="488" y="401" width="78" height="14" rx="2" fill="#0B0F17"/>
+<rect x="598" y="401" width="114" height="14" rx="2" fill="#0B0F17"/>
+<g fill="#E2B340"><circle cx="500" cy="408" r="3"/><circle cx="518" cy="408" r="3"/><circle cx="536" cy="408" r="3"/><circle cx="554" cy="408" r="3"/><circle cx="610" cy="408" r="3"/><circle cx="628" cy="408" r="3"/><circle cx="646" cy="408" r="3"/><circle cx="664" cy="408" r="3"/><circle cx="682" cy="408" r="3"/><circle cx="700" cy="408" r="3"/></g>
+<g class="pin"><text x="500" y="394">3V3</text><text x="518" y="394">5V</text><text x="536" y="394" style="font-size:7px">GND</text><text x="555" y="394" style="font-size:7px">GND</text><text x="610" y="394">A0</text><text x="628" y="394">A1</text><text x="646" y="394">A2</text><text x="664" y="394">A3</text><text x="682" y="394">A4</text><text x="700" y="394">A5</text></g>
+
+<!-- ================= RC522 ================= -->
+<rect x="150" y="50" width="180" height="150" rx="8" fill="#1D6FD1" stroke="#60A5FA" stroke-width="1.5"/>
+<rect x="170" y="66" width="110" height="80" rx="14" fill="none" stroke="#9CC6F5" stroke-width="2"/>
+<rect x="184" y="78" width="82" height="56" rx="9" fill="none" stroke="#9CC6F5" stroke-width="1.5"/>
+<rect class="ring" x="194" y="86" width="62" height="40" rx="8" fill="none" stroke="#BAE6FD" stroke-width="2"/>
+<g fill="#E2B340"><circle cx="330" cy="160" r="3"/><circle cx="330" cy="172" r="3"/><circle cx="330" cy="184" r="3"/><circle cx="210" cy="200" r="3"/><circle cx="230" cy="200" r="3"/><circle cx="250" cy="200" r="3"/></g>
+<g font-size="8.5" font-weight="600" fill="#DBEAFE"><text x="286" y="163">MOSI</text><text x="286" y="175">MISO</text><text x="291" y="187">SCK</text></g>
+<g font-size="8.5" font-weight="600" fill="#DBEAFE" text-anchor="middle"><text x="210" y="192">RST</text><text x="230" y="182">SS</text><text x="250" y="192">3V3</text></g>
+<text x="150" y="36" class="lbl">RFID-RC522</text>
+<text x="238" y="36" class="sub">SPI · SS A0 · RST A1</text>
+<rect x="258" y="262" width="184" height="24" rx="12" fill="#3B1D22" stroke="#7F1D1D"/>
+<text x="350" y="278" font-size="11.5" font-weight="700" fill="#FECACA" text-anchor="middle">VCC an 3,3 V — nicht 5 V!</text>
+
+<!-- ================= buzzer ================= -->
+<circle cx="470" cy="92" r="22" fill="#0B0D12" stroke="#374151" stroke-width="2"/>
+<circle cx="470" cy="92" r="5" fill="#374151"/>
+<circle class="ring" cx="470" cy="92" r="26" fill="none" stroke="#FACC15" stroke-width="2"/>
+<circle class="ring" cx="470" cy="92" r="26" fill="none" stroke="#FACC15" stroke-width="2" style="animation-delay:.7s"/>
+<text x="404" y="48" class="lbl">Passiver Buzzer</text>
+<text x="404" y="64" class="sub">S → D10 · tone()</text>
+
+<!-- ================= keypad ================= -->
+<rect x="860" y="30" width="190" height="160" rx="12" fill="#161B25" stroke="#2A3344" stroke-width="1.5"/>
+<g fill="#E2B340"><circle cx="860" cy="60" r="3"/><circle cx="860" cy="74" r="3"/><circle cx="860" cy="88" r="3"/><circle cx="860" cy="102" r="3"/><circle cx="860" cy="116" r="3"/><circle cx="860" cy="130" r="3"/><circle cx="860" cy="144" r="3"/><circle cx="860" cy="158" r="3"/></g>
+<g font-size="8.5" font-weight="600" fill="#94A3B8"><text x="868" y="63">R1</text><text x="868" y="77">R2</text><text x="868" y="91">R3</text><text x="868" y="105">R4</text><text x="868" y="119">C1</text><text x="868" y="133">C2</text><text x="868" y="147">C3</text><text x="868" y="161">C4</text></g>
+<g font-size="11" font-weight="700" fill="#fff" text-anchor="middle">
+  <rect x="896" y="42" width="30" height="30" rx="5" fill="#3B82F6"/><rect x="932" y="42" width="30" height="30" rx="5" fill="#3B82F6"/><rect x="968" y="42" width="30" height="30" rx="5" fill="#3B82F6"/><rect x="1004" y="42" width="30" height="30" rx="5" fill="#DC2626"/>
+  <rect x="896" y="78" width="30" height="30" rx="5" fill="#3B82F6"/><rect x="932" y="78" width="30" height="30" rx="5" fill="#3B82F6"/><rect x="968" y="78" width="30" height="30" rx="5" fill="#3B82F6"/><rect x="1004" y="78" width="30" height="30" rx="5" fill="#DC2626"/>
+  <rect x="896" y="114" width="30" height="30" rx="5" fill="#3B82F6"/><rect x="932" y="114" width="30" height="30" rx="5" fill="#3B82F6"/><rect x="968" y="114" width="30" height="30" rx="5" fill="#3B82F6"/><rect x="1004" y="114" width="30" height="30" rx="5" fill="#DC2626"/>
+  <rect x="896" y="150" width="30" height="30" rx="5" fill="#DC2626"/><rect x="932" y="150" width="30" height="30" rx="5" fill="#3B82F6"/><rect x="968" y="150" width="30" height="30" rx="5" fill="#DC2626"/><rect x="1004" y="150" width="30" height="30" rx="5" fill="#DC2626"/>
+  <text x="911" y="61">1</text><text x="947" y="61">2</text><text x="983" y="61">3</text><text x="1019" y="61">A</text>
+  <text x="911" y="97">4</text><text x="947" y="97">5</text><text x="983" y="97">6</text><text x="1019" y="97">B</text>
+  <text x="911" y="133">7</text><text x="947" y="133">8</text><text x="983" y="133">9</text><text x="1019" y="133">C</text>
+  <text x="911" y="169">*</text><text x="947" y="169">0</text><text x="983" y="169">#</text><text x="1019" y="169">D</text>
+</g>
+<text x="1062" y="60" class="lbl">4x4-Keypad</text>
+<text x="1062" y="78" class="sub">Reihen D9–D6</text>
+<text x="1062" y="94" class="sub">Spalten D5–D2</text>
+<text x="1062" y="110" class="sub">eigener Matrix-</text>
+<text x="1062" y="124" class="sub">Scan, keine Lib</text>
+
+<!-- ================= OLED ================= -->
+<rect x="850" y="440" width="200" height="120" rx="8" fill="#1D4E89" stroke="#3B82F6" stroke-width="1.5"/>
+<rect x="886" y="456" width="148" height="78" rx="3" fill="#05070B"/>
+<g transform="translate(896,461) scale(1)" fill="#D7ECFF"><circle cx="56" cy="24" r="9.5"/><circle cx="72" cy="24" r="9.5"/><polygon points="48,29 80,29 64,48"/></g>
+<g fill="#E2B340"><circle cx="850" cy="470" r="3"/><circle cx="850" cy="490" r="3"/><circle cx="850" cy="510" r="3"/><circle cx="850" cy="530" r="3"/></g>
+<g font-size="8.5" font-weight="600" fill="#DBEAFE"><text x="857" y="473">SCL</text><text x="857" y="493">SDA</text><text x="857" y="513">VCC</text><text x="857" y="533">GND</text></g>
+<text x="850" y="582" class="lbl">OLED 1,3" SH1106</text>
+<text x="850" y="598" class="sub">128x64 · I²C 0x3C · SDA A4 · SCL A5</text>
+
+<!-- ================= PIR ================= -->
+<rect x="596" y="520" width="100" height="84" rx="6" fill="#15803D" stroke="#22C55E" stroke-width="1.5"/>
+<circle cx="646" cy="562" r="30" fill="url(#dome)"/>
+<g fill="none" stroke="#B6BDC8" stroke-width="1"><circle cx="646" cy="562" r="10"/><circle cx="646" cy="562" r="20"/></g>
+<circle class="ring" cx="646" cy="562" r="34" fill="none" stroke="#F97316" stroke-width="2"/>
+<circle cx="646" cy="520" r="3" fill="#E2B340"/>
+<text x="710" y="552" class="lbl">Bewegungsmelder</text>
+<text x="710" y="568" class="sub">OUT → A2, active HIGH</text>
+
+<!-- ================= battery ================= -->
+<rect x="360" y="330" width="64" height="62" rx="6" fill="#1F2937" stroke="#374151" stroke-width="1.5"/>
+<rect x="360" y="370" width="64" height="22" rx="0" fill="#B7793F"/>
+<text x="392" y="360" font-size="18" font-weight="800" fill="#E5E7EB" text-anchor="middle">9V</text>
+
+<!-- ================= legend ================= -->
+<text x="60" y="520" font-size="26" font-weight="800" fill="#F1F5F9">Verdrahtung</text>
+<text x="60" y="546" class="sub" style="font-size:13px">Pins ausgereizt: frei sind nur noch D0/D1 (Serial).</text>
+<g font-size="12.5" fill="#CBD5E1">
+  <circle cx="66" cy="570" r="5" fill="#F87171"/><text x="78" y="574">5 V → OLED, Buzzer, Bewegungsmelder</text>
+  <circle cx="66" cy="590" r="5" fill="#EF4444" stroke="#FECACA" stroke-width="1.5"/><text x="78" y="594">3,3 V → nur RC522</text>
+  <circle cx="66" cy="610" r="5" fill="#64748B"/><text x="78" y="614">GND gemeinsam für alle Bauteile</text>
+</g>
+<text x="1140" y="626" font-size="11" fill="#475569" text-anchor="end">Pulse zeigen die Signalrichtung · Schaltplan: Schaltplan/SCHALTPLAN.png</text>
+</svg>

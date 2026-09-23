@@ -1,0 +1,1885 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projekt GAS 3D</title>
+<meta name="description" content="Interaktives 3D-Modell des Mini-Sicherheitssystems (Arduino Uno R3) mit simulierter Firmware.">
+<style>
+  :root {
+    --bg: #11151D; --panel: #171C26; --panel2: #1F2633; --ink: #E6EAF2; --muted: #94A0B4; --line: #2A3242;
+    --accent: #7DD3FC; --good: #4ADE80; --warn: #FBBF24; --bad: #F87171; --admin: #C4B5FD;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; }
+  .app { display: grid; grid-template-columns: 1fr 380px; height: 100%; }
+  .stage { position: relative; min-height: 0; overflow: hidden; }
+  canvas#c { display: block; width: 100%; height: 100%; touch-action: none; outline: none; cursor: grab; }
+  canvas#c.pointer { cursor: pointer; }
+  canvas#c:active { cursor: grabbing; }
+  .hud { position: absolute; left: 20px; top: 16px; pointer-events: none; max-width: 520px; }
+  .hud h1 { font-size: 22px; font-weight: 700; letter-spacing: -.01em; margin: 0; }
+  .hud p { margin: 3px 0 0; color: var(--muted); font-size: 12.5px; }
+  .views { position: absolute; right: 14px; top: 14px; display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; max-width: 60%; }
+  .views button, .actions button, .side-btn { font: inherit; font-size: 12.5px; font-weight: 600; color: var(--ink); background: rgba(31,38,51,.9); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+  .views button:hover, .actions button:hover, .side-btn:hover { border-color: #3C475C; background: #263042; }
+  .views button[aria-pressed="true"] { background: #1E3A5F; border-color: #2F5A8F; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .legend { position: absolute; left: 20px; bottom: 14px; display: flex; flex-wrap: wrap; gap: 6px; pointer-events: none; max-width: 75%; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); background: rgba(23,28,38,.85); border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px 2px 6px; }
+  .legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  #labels { position: absolute; inset: 0; pointer-events: none; }
+  #labels div { position: absolute; left: 0; top: 0; font-size: 11.5px; font-weight: 600; color: #E6EAF2; background: rgba(17,21,29,.78); border: 1px solid var(--line); border-radius: 6px; padding: 1px 7px; white-space: nowrap; }
+  #labels.off { display: none; }
+  #tip { position: absolute; pointer-events: none; background: #0B0E14; border: 1px solid #334055; border-radius: 8px; padding: 6px 10px; font-size: 12px; max-width: 280px; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+  #tip b { display: block; font-size: 12.5px; }
+  #tip span { color: var(--muted); }
+  #tip[hidden] { display: none; }
+  .loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); pointer-events: none; text-align: center; padding: 20px; }
+  .loading[hidden] { display: none; }
+
+  aside { border-left: 1px solid var(--line); background: var(--panel); overflow: auto; padding: 16px 20px 40px; }
+  .side-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+  .eyebrow { font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+  .side-head h1 { margin: 0; font-size: 20px; }
+  .badge { font-size: 12px; font-weight: 800; letter-spacing: .08em; padding: 5px 12px; border-radius: 999px; background: #14532D; color: #BBF7D0; white-space: nowrap; }
+  .badge.exit { background: #0C3A55; color: #BAE6FD; }
+  .badge.armed { background: #713F12; color: #FDE68A; }
+  .badge.alarm { background: #7F1D1D; color: #FECACA; animation: blink .5s steps(1) infinite; }
+  .badge.admin { background: #2E1F5E; color: #DDD6FE; }
+  @keyframes blink { 50% { background: #B91C1C; } }
+  h2 { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 20px 0 8px; font-weight: 700; }
+  #oledPreview { width: 100%; aspect-ratio: 2 / 1; image-rendering: pixelated; background: #04060A; border: 6px solid #1D4E89; border-radius: 6px; display: block; }
+  .meta { display: flex; justify-content: space-between; gap: 8px; margin-top: 8px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+  .meta b { color: var(--ink); font-weight: 700; }
+  .keypad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; background: #2C3038; padding: 10px; border-radius: 12px; }
+  .keypad button { font: inherit; font-size: 18px; font-weight: 700; color: #fff; border: 0; border-radius: 8px; padding: 9px 0; cursor: pointer; background: #3D7FE0; box-shadow: inset 0 -3px 0 rgba(0,0,0,.25); }
+  .keypad button.fn { background: #D9433F; }
+  .keypad button:active, .keypad button.hit { transform: translateY(2px); box-shadow: none; filter: brightness(1.25); }
+  .hint { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
+  code { font-family: ui-monospace, Consolas, monospace; background: var(--panel2); padding: 0 5px; border-radius: 4px; color: var(--ink); }
+  .actions { display: flex; flex-wrap: wrap; gap: 6px; }
+  .actions button.motion { border-color: #7C2D12; }
+  #cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  #cards li { display: flex; justify-content: space-between; gap: 8px; background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12.5px; }
+  #cards li code { background: transparent; padding: 0; }
+  #cards li.empty { color: var(--muted); }
+  .row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  #serial { margin: 0; height: 190px; overflow: auto; background: #0A0D13; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font: 11.5px/1.45 ui-monospace, Consolas, monospace; color: #A7F3D0; white-space: pre-wrap; }
+  .about { font-size: 12.5px; color: var(--muted); }
+  .about a { color: var(--accent); }
+
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; grid-template-rows: 58vh auto; height: auto; }
+    .stage { height: 58vh; }
+    aside { border-left: 0; border-top: 1px solid var(--line); padding: 14px 16px 40px; }
+    .views { max-width: 100%; left: 14px; right: 14px; top: auto; bottom: 12px; justify-content: flex-start; }
+    .legend, .hud p { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="stage" id="stage">
+    <canvas id="c" tabindex="0" aria-label="3D-Modell des Aufbaus"></canvas>
+    <div id="labels"></div>
+    <div class="hud">
+      <h1>Projekt GAS — 3D-Modell</h1>
+      <p>Tasten, Karten und den Bewegungsmelder anklicken. Ziehen = drehen, Mausrad = Zoom, Rechtsklick/Shift = verschieben. Die Firmware-Logik ist aus <code>alarm_system.ino</code> übernommen.</p>
+    </div>
+    <div class="views">
+      <button data-view="all">Übersicht</button>
+      <button data-view="keypad">Keypad</button>
+      <button data-view="oled">OLED</button>
+      <button data-view="rfid">RFID</button>
+      <button data-view="uno">Uno</button>
+      <button id="toggleLabels" aria-pressed="true">Beschriftung</button>
+      <button id="toggleRotate" aria-pressed="false">Drehen</button>
+    </div>
+    <div class="legend">
+      <span><i style="background:#86EFAC"></i>Keypad D2–D9</span>
+      <span><i style="background:#FB7185"></i>I²C A4/A5</span>
+      <span><i style="background:#22D3EE"></i>SPI D11–D13</span>
+      <span><i style="background:#FB923C"></i>SS A0 / RST A1</span>
+      <span><i style="background:#FACC15"></i>Buzzer D10</span>
+      <span><i style="background:#F97316"></i>PIR A2</span>
+      <span><i style="background:#DC2626"></i>5 V</span>
+      <span><i style="background:#FCA5A5"></i>3,3 V</span>
+      <span><i style="background:#475569"></i>GND</span>
+    </div>
+    <div id="tip" hidden></div>
+    <div class="loading" id="loading">3D-Modell wird geladen …</div>
+  </div>
+
+  <aside>
+    <div class="side-head">
+      <div><div class="eyebrow">LF07 · Arduino Uno R3</div><h1>Projekt GAS</h1></div>
+      <div id="badge" class="badge">UNSCHARF</div>
+    </div>
+
+    <h2>OLED · SH1106 128x64</h2>
+    <canvas id="oledPreview" width="384" height="192"></canvas>
+    <div class="meta">
+      <span>Fehlversuche <b id="tries">0/3</b></span>
+      <span>PIR OUT <b id="pirState">LOW</b></span>
+      <span>Buzzer <b id="buzState">aus</b></span>
+    </div>
+
+    <h2>Keypad</h2>
+    <div class="keypad" id="keypad"></div>
+    <p class="hint">Demo-PIN <code>1234</code> · Admin-PIN <code>0000</code> (die echten PINs stehen im Sketch). Tastatur geht auch: Enter = <code>#</code>, Esc = <code>*</code>.</p>
+
+    <h2>Aktionen</h2>
+    <div class="actions">
+      <button data-tag="A">Karte A auflegen</button>
+      <button data-tag="B">Karte B auflegen</button>
+      <button data-tag="F">Anhänger auflegen</button>
+      <button class="motion" id="motionBtn">Bewegung auslösen</button>
+      <button id="soundBtn" aria-pressed="true">Ton: an</button>
+    </div>
+    <p class="hint">Karte A ist ab Werk gespeichert, Karte B kann im Admin-Menü angelernt werden, der Anhänger hat eine 7-Byte-UID und passt nie.</p>
+
+    <h2>Gespeicherte Karten · EEPROM</h2>
+    <ul id="cards"></ul>
+    <div class="row"><button class="side-btn" id="eepromReset">EEPROM auf Werksvorgabe</button></div>
+
+    <h2>Serieller Monitor · 9600 Baud</h2>
+    <pre id="serial" aria-live="polite"></pre>
+    <div class="row"><button class="side-btn" id="serialClear">Leeren</button></div>
+
+    <h2>Über dieses Modell</h2>
+    <p class="about">Aufbau nach <a href="https://github.com/Rexi255/Arduino-Security-System/blob/main/Schaltplan/SCHALTPLAN.png">Schaltplan</a> und Pin-Tabelle. Zustände, Zeiten (10 s Ausgang, 30 s Sirene, 2 s Fehlerton), Töne und OLED-Grafiken entsprechen dem Sketch; das EEPROM wird im Browser gespeichert. Läuft auch offline: <code>docs/viewer/index.html</code> direkt öffnen.</p>
+  </aside>
+</div>
+
+<script src="three.min.js"></script>
+<script>
+'use strict';
+
+const $ = (s) => document.querySelector(s);
+const bootTime = performance.now();
+const millis = () => Math.floor(performance.now() - bootTime);
+
+// ===========================================================================
+// Hardware stand-ins: serial, buzzer (WebAudio), OLED frame buffer
+// ===========================================================================
+const hw = { txUntil: 0, lUntil: 0 };
+
+const serialEl = $('#serial');
+const serialLines = [];
+function serial(msg) {
+  serialLines.push((millis() / 1000).toFixed(3) + ' -> ' + msg);
+  if (serialLines.length > 250) serialLines.shift();
+  serialEl.textContent = serialLines.join('\n');
+  serialEl.scrollTop = serialEl.scrollHeight;
+  hw.txUntil = millis() + 80;
+}
+
+const snd = { ctx: null, osc: null, gain: null, on: true, freq: 0, until: 0 };
+function audioUnlock() {
+  if (snd.ctx) {
+    if (snd.ctx.state === 'suspended') snd.ctx.resume();
+    return;
+  }
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    snd.ctx = new AC();
+    snd.osc = snd.ctx.createOscillator();
+    snd.osc.type = 'square';
+    snd.gain = snd.ctx.createGain();
+    snd.gain.gain.value = 0;
+    snd.osc.connect(snd.gain);
+    snd.gain.connect(snd.ctx.destination);
+    snd.osc.start();
+  } catch (e) {
+    snd.ctx = null;
+  }
+}
+// what the pin does - the WebAudio part only makes it audible
+function hwTone(freq) {
+  snd.freq = freq;
+  if (!snd.ctx) return;
+  const t = snd.ctx.currentTime;
+  if (freq > 0 && snd.on && !document.hidden) {
+    snd.osc.frequency.setValueAtTime(freq, t);
+    snd.gain.gain.setTargetAtTime(0.045, t, 0.003);
+  } else {
+    snd.gain.gain.setTargetAtTime(0, t, 0.003);
+  }
+}
+function tone(freq, duration) {
+  hwTone(freq);
+  snd.until = duration ? millis() + duration : 0;
+}
+function noTone() {
+  hwTone(0);
+  snd.until = 0;
+}
+
+const OLED_W = 128, OLED_H = 64;
+const fb = new Uint8Array(OLED_W * OLED_H);
+const WHITE = 1, BLACK = 0;
+
+// classic 5x7 font, 5 columns per glyph, LSB = top row (ASCII 32..126)
+const FONT = [
+  0x00,0x00,0x00,0x00,0x00, 0x00,0x00,0x5F,0x00,0x00, 0x00,0x07,0x00,0x07,0x00, 0x14,0x7F,0x14,0x7F,0x14,
+  0x24,0x2A,0x7F,0x2A,0x12, 0x23,0x13,0x08,0x64,0x62, 0x36,0x49,0x56,0x20,0x50, 0x00,0x08,0x07,0x03,0x00,
+  0x00,0x1C,0x22,0x41,0x00, 0x00,0x41,0x22,0x1C,0x00, 0x2A,0x1C,0x7F,0x1C,0x2A, 0x08,0x08,0x3E,0x08,0x08,
+  0x00,0x80,0x70,0x30,0x00, 0x08,0x08,0x08,0x08,0x08, 0x00,0x00,0x60,0x60,0x00, 0x20,0x10,0x08,0x04,0x02,
+  0x3E,0x51,0x49,0x45,0x3E, 0x00,0x42,0x7F,0x40,0x00, 0x72,0x49,0x49,0x49,0x46, 0x21,0x41,0x49,0x4D,0x33,
+  0x18,0x14,0x12,0x7F,0x10, 0x27,0x45,0x45,0x45,0x39, 0x3C,0x4A,0x49,0x49,0x31, 0x41,0x21,0x11,0x09,0x07,
+  0x36,0x49,0x49,0x49,0x36, 0x46,0x49,0x49,0x29,0x1E, 0x00,0x00,0x14,0x00,0x00, 0x00,0x40,0x34,0x00,0x00,
+  0x00,0x08,0x14,0x22,0x41, 0x14,0x14,0x14,0x14,0x14, 0x00,0x41,0x22,0x14,0x08, 0x02,0x01,0x59,0x09,0x06,
+  0x3E,0x41,0x5D,0x59,0x4E, 0x7C,0x12,0x11,0x12,0x7C, 0x7F,0x49,0x49,0x49,0x36, 0x3E,0x41,0x41,0x41,0x22,
+  0x7F,0x41,0x41,0x41,0x3E, 0x7F,0x49,0x49,0x49,0x41, 0x7F,0x09,0x09,0x09,0x01, 0x3E,0x41,0x41,0x51,0x73,
+  0x7F,0x08,0x08,0x08,0x7F, 0x00,0x41,0x7F,0x41,0x00, 0x20,0x40,0x41,0x3F,0x01, 0x7F,0x08,0x14,0x22,0x41,
+  0x7F,0x40,0x40,0x40,0x40, 0x7F,0x02,0x1C,0x02,0x7F, 0x7F,0x04,0x08,0x10,0x7F, 0x3E,0x41,0x41,0x41,0x3E,
+  0x7F,0x09,0x09,0x09,0x06, 0x3E,0x41,0x51,0x21,0x5E, 0x7F,0x09,0x19,0x29,0x46, 0x26,0x49,0x49,0x49,0x32,
+  0x03,0x01,0x7F,0x01,0x03, 0x3F,0x40,0x40,0x40,0x3F, 0x1F,0x20,0x40,0x20,0x1F, 0x3F,0x40,0x38,0x40,0x3F,
+  0x63,0x14,0x08,0x14,0x63, 0x03,0x04,0x78,0x04,0x03, 0x61,0x59,0x49,0x4D,0x43, 0x00,0x7F,0x41,0x41,0x41,
+  0x02,0x04,0x08,0x10,0x20, 0x00,0x41,0x41,0x41,0x7F, 0x04,0x02,0x01,0x02,0x04, 0x40,0x40,0x40,0x40,0x40,
+  0x00,0x03,0x07,0x08,0x00, 0x20,0x54,0x54,0x78,0x40, 0x7F,0x28,0x44,0x44,0x38, 0x38,0x44,0x44,0x44,0x28,
+  0x38,0x44,0x44,0x28,0x7F, 0x38,0x54,0x54,0x54,0x18, 0x00,0x08,0x7E,0x09,0x02, 0x18,0xA4,0xA4,0x9C,0x78,
+  0x7F,0x08,0x04,0x04,0x78, 0x00,0x44,0x7D,0x40,0x00, 0x20,0x40,0x40,0x3D,0x00, 0x7F,0x10,0x28,0x44,0x00,
+  0x00,0x41,0x7F,0x40,0x00, 0x7C,0x04,0x78,0x04,0x78, 0x7C,0x08,0x04,0x04,0x78, 0x38,0x44,0x44,0x44,0x38,
+  0xFC,0x18,0x24,0x24,0x18, 0x18,0x24,0x24,0x18,0xFC, 0x7C,0x08,0x04,0x04,0x08, 0x48,0x54,0x54,0x54,0x24,
+  0x04,0x04,0x3F,0x44,0x24, 0x3C,0x40,0x40,0x20,0x7C, 0x1C,0x20,0x40,0x20,0x1C, 0x3C,0x40,0x30,0x40,0x3C,
+  0x44,0x28,0x10,0x28,0x44, 0x4C,0x90,0x90,0x90,0x7C, 0x44,0x64,0x54,0x4C,0x44, 0x00,0x08,0x36,0x41,0x00,
+  0x00,0x00,0x77,0x00,0x00, 0x00,0x41,0x36,0x08,0x00, 0x02,0x01,0x02,0x04,0x02
+];
+
+// small subset of Adafruit_GFX, pixel exact enough for the icons in the sketch
+const display = {
+  cursorX: 0, cursorY: 0, textSize: 1, textColor: WHITE,
+  clearDisplay() { fb.fill(0); },
+  px(x, y, c) { if (x >= 0 && x < OLED_W && y >= 0 && y < OLED_H) fb[y * OLED_W + x] = c; },
+  fillRect(x, y, w, h, c) { for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) this.px(i, j, c); },
+  drawFastHLine(x, y, w, c) { this.fillRect(x, y, w, 1, c); },
+  drawFastVLine(x, y, h, c) { this.fillRect(x, y, 1, h, c); },
+  fillCircle(x0, y0, r, c) {
+    for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) if (dx * dx + dy * dy <= r * r + r) this.px(x0 + dx, y0 + dy, c);
+  },
+  fillRoundRect(x, y, w, h, r, c) {
+    r = Math.min(r, Math.floor(Math.min(w, h) / 2));
+    for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
+      let dx = 0, dy = 0;
+      if (i < r) dx = r - i; else if (i > w - 1 - r) dx = i - (w - 1 - r);
+      if (j < r) dy = r - j; else if (j > h - 1 - r) dy = j - (h - 1 - r);
+      if (dx * dx + dy * dy <= r * r + r) this.px(x + i, y + j, c);
+    }
+  },
+  fillTriangle(x0, y0, x1, y1, x2, y2, c) {
+    const minX = Math.min(x0, x1, x2), maxX = Math.max(x0, x1, x2), minY = Math.min(y0, y1, y2), maxY = Math.max(y0, y1, y2);
+    for (let y = minY; y <= maxY; y++) for (let x = minX; x <= maxX; x++) {
+      const w0 = (x1 - x) * (y2 - y) - (x2 - x) * (y1 - y);
+      const w1 = (x2 - x) * (y0 - y) - (x0 - x) * (y2 - y);
+      const w2 = (x0 - x) * (y1 - y) - (x1 - x) * (y0 - y);
+      if ((w0 >= 0 && w1 >= 0 && w2 >= 0) || (w0 <= 0 && w1 <= 0 && w2 <= 0)) this.px(x, y, c);
+    }
+  },
+  drawLine(x0, y0, x1, y1, c) {
+    const dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1, dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+    let err = dx + dy;
+    for (;;) {
+      this.px(x0, y0, c);
+      if (x0 === x1 && y0 === y1) break;
+      const e2 = 2 * err;
+      if (e2 >= dy) { err += dy; x0 += sx; }
+      if (e2 <= dx) { err += dx; y0 += sy; }
+    }
+  },
+  setTextSize(s) { this.textSize = s; },
+  setTextColor(c) { this.textColor = c; },
+  setCursor(x, y) { this.cursorX = x; this.cursorY = y; },
+  print(v) {
+    const s = String(v), size = this.textSize;
+    for (const ch of s) {
+      const code = ch.charCodeAt(0) - 32;
+      if (code >= 0 && code < 95) {
+        for (let col = 0; col < 5; col++) {
+          const line = FONT[code * 5 + col];
+          for (let row = 0; row < 8; row++) {
+            if ((line >> row) & 1) this.fillRect(this.cursorX + col * size, this.cursorY + row * size, size, size, this.textColor);
+          }
+        }
+      }
+      this.cursorX += 6 * size;
+    }
+  },
+  display() { blitOled(); }
+};
+
+const oledCanvas = document.createElement('canvas');
+oledCanvas.width = OLED_W;
+oledCanvas.height = OLED_H;
+const oledCtx = oledCanvas.getContext('2d');
+const oledImg = oledCtx.createImageData(OLED_W, OLED_H);
+const previewCtx = $('#oledPreview').getContext('2d');
+previewCtx.imageSmoothingEnabled = false;
+let oledTex = null;
+
+function blitOled() {
+  const d = oledImg.data;
+  for (let i = 0; i < fb.length; i++) {
+    const on = fb[i];
+    d[i * 4] = on ? 214 : 3;
+    d[i * 4 + 1] = on ? 236 : 5;
+    d[i * 4 + 2] = on ? 255 : 9;
+    d[i * 4 + 3] = 255;
+  }
+  oledCtx.putImageData(oledImg, 0, 0);
+  previewCtx.drawImage(oledCanvas, 0, 0, 384, 192);
+  if (oledTex) oledTex.needsUpdate = true;
+  fx.i2c();
+}
+
+// ===========================================================================
+// Firmware - ported 1:1 from Code/alarm_system/alarm_system.ino
+// ===========================================================================
+const PIN_CODE = '1234';    // demo value, the real PIN lives in the sketch
+const ADMIN_PIN = '0000';   // demo value, the real admin PIN lives in the sketch
+const ALARM_MS = 30000, ERROR_TONE_MS = 2000, EXIT_DELAY_MS = 10000, ENTRY_TIMEOUT_MS = 10000;
+const ADMIN_IDLE_TIMEOUT_MS = 20000, ADMIN_MSG_MS = 1500;
+const MAX_WRONG_TRIES = 3, MAX_ENTRY_LEN = 8, UID_LEN = 4, MAX_STORED_UIDS = 8, RFID_POLL_MS = 200;
+const DEFAULT_UIDS = [[0x3F, 0xA1, 0x7C, 0x02]];
+
+const ST = { DISARMED: 0, EXIT_DELAY: 1, ARMED: 2, ALARM: 3, ADMIN: 4 };
+const AD = { MENU: 0, ADD_WAIT: 1, LIST: 2 };
+const SND = { NONE: 0, OK: 1, ERROR: 2, ALARM: 3 };
+
+const fw = {
+  state: ST.DISARMED, entry: '', lastKeyMs: 0, enteringAdmin: false, wrongTries: 0, stateStart: 0,
+  lastMotion: false, displayDirty: true, adminScreen: AD.MENU, adminListIndex: 0, lastAdminKeyMs: 0,
+  adminMsg: null, adminMsgUntil: 0, lastDraw: 0, sound: SND.NONE, soundStart: 0, currentFreq: -1,
+  lastBeepSec: 999, lastRfidPoll: 0, uids: []
+};
+// inputs coming from the 3D scene / side panel
+const io = { keys: [], card: null, motionUntil: 0 };
+const motionPin = () => millis() < io.motionUntil;
+
+function setup() {
+  serial('[RFID] version 0x92');
+  loadUidsFromEeprom();
+  serial('=== Alarm system ready (disarmed) ===');
+  serial("PIN + '#' or a known RFID card arms / disarms.");
+  serial('stored RFID cards: ' + fw.uids.length);
+  fw.lastMotion = motionPin();
+  fw.displayDirty = true;
+}
+
+function loop() {
+  if (snd.until && millis() >= snd.until) {   // end of tone(freq, duration)
+    hwTone(0);
+    snd.until = 0;
+  }
+  if (fw.state === ST.ADMIN) {
+    handleAdminKeypad();
+    handleAdminRfid();
+  } else {
+    handleKeypad();
+    handleRfid();
+  }
+  handleMotion();
+  updateState();
+  updateSound();
+  updateDisplay();
+}
+
+// ---- keypad ---------------------------------------------------------------
+const getKeyPress = () => (io.keys.length ? io.keys.shift() : 0);
+
+function handleKeypad() {
+  if ((fw.entry.length > 0 || fw.enteringAdmin) && millis() - fw.lastKeyMs > ENTRY_TIMEOUT_MS) {
+    clearEntry();
+    fw.enteringAdmin = false;
+    fw.displayDirty = true;
+  }
+  const key = getKeyPress();
+  if (!key) return;
+  fw.lastKeyMs = millis();
+  serial('[KEY] ' + key);
+
+  if (key >= '0' && key <= '9') {
+    if (fw.entry.length < MAX_ENTRY_LEN) {
+      fw.entry += key;
+      clickBeep();
+    }
+    fw.displayDirty = true;
+  } else if (key === '*') {
+    clearEntry();
+    fw.enteringAdmin = false;
+    clickBeep();
+    fw.displayDirty = true;
+  } else if (key === '#') {
+    submitEntry();
+  } else if (key === 'A' && fw.state === ST.DISARMED && fw.entry.length === 0) {
+    fw.enteringAdmin = true;
+    clickBeep();
+    fw.displayDirty = true;
+  } else if (key === 'B' && fw.state === ST.DISARMED && fw.entry.length === 0) {
+    resetRfid();
+  }
+}
+
+function clearEntry() { fw.entry = ''; }
+
+function submitEntry() {
+  if (fw.enteringAdmin) {
+    const adminOk = fw.entry.length > 0 && fw.entry === ADMIN_PIN;
+    fw.enteringAdmin = false;
+    clearEntry();
+    fw.displayDirty = true;
+    if (adminOk) {
+      serial('[ADMIN] PIN correct, opening menu');
+      openAdminMenu();
+    } else {
+      serial('[ADMIN] wrong PIN');
+      accessDenied('too many wrong admin PIN entries');
+    }
+    return;
+  }
+  const ok = fw.entry.length > 0 && fw.entry === PIN_CODE;
+  serial('[PIN] entered: ' + fw.entry);
+  clearEntry();
+  fw.displayDirty = true;
+  if (ok) {
+    serial('[PIN] correct');
+    accessGranted();
+  } else {
+    serial('[PIN] wrong, try ' + (fw.wrongTries + 1));
+    accessDenied('too many wrong PIN entries');
+  }
+}
+
+// ---- RFID -----------------------------------------------------------------
+function readNewCardUid() {
+  if (millis() - fw.lastRfidPoll < RFID_POLL_MS) return null;
+  fw.lastRfidPoll = millis();
+  if (!io.card) return null;
+  const uid = io.card;
+  io.card = null;                       // PICC_HaltA(): reads once per touch
+  serial('[RFID] uid:' + uid.map((b) => ' ' + b.toString(16).toUpperCase()).join(''));
+  fx.spi();
+  return uid;
+}
+
+function resetRfid() {
+  serial('[RFID] manual reset');
+  fx.spi();
+  serial('[RFID] version 0x92');
+  startSound(SND.OK);
+}
+
+function handleRfid() {
+  const uid = readNewCardUid();
+  if (!uid) return;
+  if (uidAllowed(uid)) {
+    serial('[RFID] known card');
+    accessGranted();
+  } else {
+    serial('[RFID] unknown card');
+    accessDenied('too many unknown cards');
+  }
+}
+
+function uidAllowed(uid) {
+  if (uid.length !== UID_LEN) return false;
+  return findStoredUid(uid) !== -1;
+}
+
+function findStoredUid(uid) {
+  return fw.uids.findIndex((u) => u.every((b, i) => b === uid[i]));
+}
+
+// ---- UID storage, the browser's localStorage plays the EEPROM -------------
+const EEPROM_KEY = 'gas-viewer-eeprom';
+function loadUidsFromEeprom() {
+  let data = null;
+  try { data = JSON.parse(localStorage.getItem(EEPROM_KEY)); } catch (e) { data = null; }
+  if (!data || data.magic !== 0xA5 || !Array.isArray(data.uids)) {
+    fw.uids = DEFAULT_UIDS.map((u) => u.slice());
+    saveUidsToEeprom();
+    serial('[EEPROM] blank chip, wrote factory default UIDs');
+    return;
+  }
+  if (data.uids.length > MAX_STORED_UIDS) {
+    serial('[EEPROM] bad stored count, resetting to 0');
+    fw.uids = [];
+    saveUidsToEeprom();
+    return;
+  }
+  fw.uids = data.uids;
+  renderCardList();
+}
+function saveUidsToEeprom() {
+  try { localStorage.setItem(EEPROM_KEY, JSON.stringify({ magic: 0xA5, uids: fw.uids })); } catch (e) { /* private mode */ }
+  renderCardList();
+}
+function addUid(uid) {
+  if (fw.uids.length >= MAX_STORED_UIDS) return false;
+  fw.uids.push(uid.slice());
+  saveUidsToEeprom();
+  return true;
+}
+function deleteUidAt(index) {
+  if (index >= fw.uids.length) return;
+  fw.uids.splice(index, 1);
+  saveUidsToEeprom();
+}
+
+// ---- access decision ------------------------------------------------------
+function accessGranted() {
+  fw.wrongTries = 0;
+  fw.displayDirty = true;
+  if (fw.state === ST.ALARM || fw.state === ST.ARMED || fw.state === ST.EXIT_DELAY) {
+    setState(ST.DISARMED);
+    serial('[STATE] disarmed');
+  } else if (fw.state === ST.DISARMED) {
+    setState(ST.EXIT_DELAY);
+    serial('[STATE] arming - exit delay running');
+  }
+  startSound(SND.OK);
+}
+
+function accessDenied(reason) {
+  fw.wrongTries++;
+  fw.displayDirty = true;
+  if (fw.wrongTries >= MAX_WRONG_TRIES) {
+    fw.wrongTries = 0;
+    triggerAlarm(reason);
+  } else {
+    startSound(SND.ERROR);
+  }
+}
+
+// ---- admin menu -----------------------------------------------------------
+function openAdminMenu() {
+  fw.adminScreen = AD.MENU;
+  fw.adminListIndex = 0;
+  fw.adminMsg = null;
+  fw.lastAdminKeyMs = millis();
+  setState(ST.ADMIN);
+  startSound(SND.OK);
+}
+
+function showAdminMsg(msg) {
+  fw.adminMsg = msg;
+  fw.adminMsgUntil = millis() + ADMIN_MSG_MS;
+  fw.displayDirty = true;
+}
+
+function handleAdminKeypad() {
+  if (millis() - fw.lastAdminKeyMs > ADMIN_IDLE_TIMEOUT_MS) {
+    serial('[ADMIN] idle timeout, closing menu');
+    setState(ST.DISARMED);
+    return;
+  }
+  const key = getKeyPress();
+  if (!key) return;
+  fw.lastAdminKeyMs = millis();
+  serial('[ADMIN KEY] ' + key);
+
+  if (fw.adminScreen === AD.MENU) {
+    if (key === '1') {
+      fw.adminScreen = AD.ADD_WAIT;
+      clickBeep();
+      fw.displayDirty = true;
+    } else if (key === '2') {
+      fw.adminScreen = AD.LIST;
+      fw.adminListIndex = 0;
+      clickBeep();
+      fw.displayDirty = true;
+    } else if (key === '*') {
+      serial('[ADMIN] menu closed');
+      setState(ST.DISARMED);
+    }
+  } else if (fw.adminScreen === AD.ADD_WAIT) {
+    if (key === '*') {
+      fw.adminScreen = AD.MENU;
+      clickBeep();
+      fw.displayDirty = true;
+    }
+  } else if (fw.adminScreen === AD.LIST) {
+    if (key === '*') {
+      fw.adminScreen = AD.MENU;
+      clickBeep();
+      fw.displayDirty = true;
+    } else if (key === '#') {
+      if (fw.uids.length > 0) fw.adminListIndex = (fw.adminListIndex + 1) % fw.uids.length;
+      clickBeep();
+      fw.displayDirty = true;
+    } else if (key === 'D' && fw.uids.length > 0) {
+      deleteUidAt(fw.adminListIndex);
+      if (fw.adminListIndex >= fw.uids.length && fw.uids.length > 0) fw.adminListIndex = fw.uids.length - 1;
+      serial('[ADMIN] card deleted');
+      showAdminMsg('Deleted');
+    }
+  }
+}
+
+function handleAdminRfid() {
+  if (fw.adminScreen !== AD.ADD_WAIT) return;
+  const uid = readNewCardUid();
+  if (!uid) return;
+  fw.lastAdminKeyMs = millis();
+  if (uid.length !== UID_LEN) {
+    showAdminMsg('Bad card');
+  } else if (findStoredUid(uid) !== -1) {
+    showAdminMsg('Known');
+  } else if (addUid(uid)) {
+    serial('[ADMIN] card added');
+    showAdminMsg('Saved');
+  } else {
+    showAdminMsg('Full');
+  }
+  fw.adminScreen = AD.MENU;
+}
+
+// ---- motion sensor --------------------------------------------------------
+function handleMotion() {
+  const motion = motionPin();
+  if (motion && !fw.lastMotion && fw.state === ST.ARMED) triggerAlarm('motion detected');
+  fw.lastMotion = motion;
+}
+
+// ---- state machine --------------------------------------------------------
+function setState(next) {
+  fw.state = next;
+  fw.stateStart = millis();
+  fw.displayDirty = true;
+  if (next !== ST.ALARM) stopSound();
+  if (next === ST.ARMED) fw.lastMotion = motionPin();
+}
+
+function triggerAlarm(reason) {
+  serial('[ALARM] ' + reason);
+  setState(ST.ALARM);
+  startSound(SND.ALARM);
+}
+
+function updateState() {
+  const now = millis();
+  if (fw.state === ST.EXIT_DELAY) {
+    const sec = Math.floor((now - fw.stateStart) / 1000);
+    if (fw.sound === SND.NONE && sec !== fw.lastBeepSec) {
+      fw.lastBeepSec = sec;
+      tone(1200, 60);
+      fw.currentFreq = -1;
+    }
+    if (now - fw.stateStart >= EXIT_DELAY_MS) {
+      setState(ST.ARMED);
+      serial('[STATE] armed');
+    }
+  } else if (fw.state === ST.ALARM) {
+    if (now - fw.stateStart >= ALARM_MS) {
+      stopSound();
+      setState(ST.ARMED);
+      serial('[STATE] alarm finished - armed again');
+    }
+  }
+}
+
+// ---- sound engine ---------------------------------------------------------
+function startSound(id) {
+  fw.sound = id;
+  fw.soundStart = millis();
+  fw.currentFreq = -1;
+}
+function stopSound() {
+  fw.sound = SND.NONE;
+  noTone();
+  fw.currentFreq = -1;
+  fw.displayDirty = true;
+}
+function setFreq(freq) {
+  if (freq === fw.currentFreq) return;
+  fw.currentFreq = freq;
+  if (freq <= 0) noTone(); else tone(freq);
+}
+function clickBeep() {
+  if (fw.sound === SND.NONE) {
+    tone(2000, 25);
+    fw.currentFreq = -1;
+  }
+}
+function updateSound() {
+  if (fw.sound === SND.NONE) return;
+  const t = millis() - fw.soundStart;
+  if (fw.sound === SND.OK) {
+    if (t < 110) setFreq(1568);
+    else if (t < 140) setFreq(0);
+    else if (t < 340) setFreq(2093);
+    else stopSound();
+  } else if (fw.sound === SND.ERROR) {
+    if (t >= ERROR_TONE_MS) stopSound();
+    else setFreq(Math.floor(t / 35) % 2 ? 95 : 135);
+  } else if (fw.sound === SND.ALARM) {
+    const phase = t % 500;
+    const step = Math.floor((phase % 250) / 10);
+    setFreq(phase < 250 ? 2500 + step * 50 : 3700 - step * 50);
+  } else {
+    stopSound();
+  }
+}
+
+// ---- display --------------------------------------------------------------
+function updateDisplay() {
+  const animated = fw.state === ST.ALARM || fw.state === ST.EXIT_DELAY || (fw.state === ST.ADMIN && fw.adminMsg !== null);
+  if (!fw.displayDirty && !(animated && millis() - fw.lastDraw >= 250)) return;
+  fw.displayDirty = false;
+  fw.lastDraw = millis();
+
+  display.clearDisplay();
+  display.setTextColor(WHITE);
+
+  if (fw.entry.length > 0) {
+    drawEntry();
+    display.display();
+    return;
+  }
+  if (fw.sound === SND.ERROR) {
+    drawCross(64, 32, WHITE);
+    display.display();
+    return;
+  }
+  switch (fw.state) {
+    case ST.DISARMED:
+      drawHeart(64, 30, WHITE);
+      break;
+    case ST.EXIT_DELAY:
+      drawSkull(64, 24, WHITE, BLACK);
+      drawSeconds(secondsLeft(EXIT_DELAY_MS), 2, 46);
+      break;
+    case ST.ARMED:
+      drawSkull(64, 34, WHITE, BLACK);
+      break;
+    case ST.ALARM: {
+      const flash = Math.floor(millis() / 250) % 2 === 0;
+      const fg = flash ? BLACK : WHITE, bg = flash ? WHITE : BLACK;
+      if (flash) display.fillRect(0, 0, OLED_W, OLED_H, WHITE);
+      drawSkull(64, 26, fg, bg);
+      display.setTextColor(fg);
+      drawSeconds(secondsLeft(ALARM_MS), 2, 47);
+      break;
+    }
+    case ST.ADMIN:
+      drawAdminScreen();
+      break;
+  }
+  display.display();
+}
+
+function drawAdminScreen() {
+  display.setTextSize(1);
+  if (fw.adminMsg !== null) {
+    if (millis() >= fw.adminMsgUntil) {
+      fw.adminMsg = null;
+    } else {
+      display.setCursor(4, 28);
+      display.print(fw.adminMsg);
+      return;
+    }
+  }
+  if (fw.adminScreen === AD.MENU) {
+    display.setCursor(4, 4); display.print('ADMIN');
+    display.setCursor(4, 24); display.print('1 Add card');
+    display.setCursor(4, 36); display.print('2 List/Del');
+    display.setCursor(4, 52); display.print('* Exit');
+  } else if (fw.adminScreen === AD.ADD_WAIT) {
+    display.setCursor(4, 24); display.print('Scan card...');
+    display.setCursor(4, 52); display.print('* Cancel');
+  } else {
+    if (fw.uids.length === 0) {
+      display.setCursor(4, 28); display.print('Empty');
+    } else {
+      display.setCursor(4, 4);
+      display.print('Card ' + (fw.adminListIndex + 1) + '/' + fw.uids.length);
+      display.setCursor(4, 24);
+      display.print(uidHex(fw.uids[fw.adminListIndex]));
+    }
+    display.setCursor(4, 52); display.print('# Next D Del * Back');
+  }
+}
+
+const uidHex = (uid) => uid.map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
+
+function drawEntry() {
+  const size = fw.entry.length <= 6 ? 3 : 2;
+  const w = fw.entry.length * 6 * size;
+  display.setTextSize(size);
+  display.setCursor(Math.trunc((OLED_W - w) / 2), Math.trunc((OLED_H - 8 * size) / 2));
+  display.print('*'.repeat(fw.entry.length));
+}
+
+function secondsLeft(total) {
+  const done = millis() - fw.stateStart;
+  if (done >= total) return 0;
+  return Math.floor((total - done + 999) / 1000);
+}
+
+function drawSeconds(secs, size, y) {
+  const chars = secs >= 10 ? 3 : 2;
+  display.setTextSize(size);
+  display.setCursor(Math.trunc((OLED_W - chars * 6 * size) / 2), y);
+  display.print(secs + 's');
+}
+
+function drawSkull(cx, cy, fg, bg) {
+  display.fillRoundRect(cx - 19, cy - 22, 38, 32, 12, fg);
+  display.fillRoundRect(cx - 11, cy + 4, 22, 13, 4, fg);
+  display.fillCircle(cx - 9, cy - 7, 6, bg);
+  display.fillCircle(cx + 9, cy - 7, 6, bg);
+  display.fillTriangle(cx, cy - 1, cx - 3, cy + 4, cx + 3, cy + 4, bg);
+  display.drawFastHLine(cx - 11, cy + 5, 22, bg);
+  for (let i = 0; i < 4; i++) display.drawFastVLine(cx - 7 + i * 5, cy + 6, 11, bg);
+}
+
+function drawHeart(cx, cy, fg) {
+  display.fillCircle(cx - 8, cy - 6, 9, fg);
+  display.fillCircle(cx + 8, cy - 6, 9, fg);
+  display.fillTriangle(cx - 16, cy - 1, cx + 16, cy - 1, cx, cy + 18, fg);
+}
+
+function drawCross(cx, cy, fg) {
+  for (let i = -2; i <= 2; i++) {
+    display.drawLine(cx - 20, cy - 20 + i, cx + 20, cy + 20 + i, fg);
+    display.drawLine(cx - 20, cy + 20 + i, cx + 20, cy - 20 + i, fg);
+  }
+}
+
+// ===========================================================================
+// Side panel
+// ===========================================================================
+const KEYS = [['1', '2', '3', 'A'], ['4', '5', '6', 'B'], ['7', '8', '9', 'C'], ['*', '0', '#', 'D']];
+const TAGS = {
+  A: { name: 'Karte A', uid: [0x3F, 0xA1, 0x7C, 0x02] },
+  B: { name: 'Karte B', uid: [0x8E, 0x44, 0xD0, 0x5B] },
+  F: { name: 'Anhänger', uid: [0x04, 0x5A, 0x2B, 0x91, 0xC2, 0x6F, 0x80] }
+};
+const keyButtons = {};
+
+const keypadEl = $('#keypad');
+KEYS.forEach((row) => row.forEach((k) => {
+  const b = document.createElement('button');
+  b.textContent = k;
+  if (!/[0-9]/.test(k)) b.className = 'fn';
+  b.addEventListener('click', () => pressKey(k));
+  keypadEl.appendChild(b);
+  keyButtons[k] = b;
+}));
+
+function renderCardList() {
+  const ul = $('#cards');
+  ul.innerHTML = '';
+  if (fw.uids.length === 0) {
+    const li = document.createElement('li');
+    li.className = 'empty';
+    li.textContent = 'Keine Karte gespeichert';
+    ul.appendChild(li);
+    return;
+  }
+  fw.uids.forEach((uid, i) => {
+    const known = Object.values(TAGS).find((t) => t.uid.length === uid.length && t.uid.every((b, j) => b === uid[j]));
+    const li = document.createElement('li');
+    const name = document.createElement('span');
+    name.textContent = (i + 1) + '. ' + (known ? known.name : 'Karte');
+    const code = document.createElement('code');
+    code.textContent = uidHex(uid);
+    li.append(name, code);
+    ul.appendChild(li);
+  });
+}
+
+function pressKey(k) {
+  audioUnlock();
+  io.keys.push(k);
+  const b = keyButtons[k];
+  if (b) {
+    b.classList.add('hit');
+    setTimeout(() => b.classList.remove('hit'), 120);
+  }
+  if (scene3d) scene3d.pressKey(k);
+}
+
+function triggerMotion() {
+  audioUnlock();
+  io.motionUntil = millis() + 3000;   // HC-SR501 style: OUT stays HIGH for a few seconds
+  fx.pir();
+}
+
+document.querySelectorAll('[data-tag]').forEach((b) => b.addEventListener('click', () => presentTag(b.dataset.tag)));
+$('#motionBtn').addEventListener('click', triggerMotion);
+$('#soundBtn').addEventListener('click', (e) => {
+  audioUnlock();
+  snd.on = !snd.on;
+  e.currentTarget.textContent = 'Ton: ' + (snd.on ? 'an' : 'aus');
+  e.currentTarget.setAttribute('aria-pressed', String(snd.on));
+  hwTone(snd.freq);
+});
+$('#eepromReset').addEventListener('click', () => {
+  try { localStorage.removeItem(EEPROM_KEY); } catch (e) { /* ignore */ }
+  loadUidsFromEeprom();
+});
+$('#serialClear').addEventListener('click', () => {
+  serialLines.length = 0;
+  serialEl.textContent = '';
+});
+window.addEventListener('keydown', (e) => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  let k = e.key;
+  if (k === 'Enter') k = '#';
+  else if (k === 'Escape' || k === 'Backspace') k = '*';
+  else if (/^[a-dA-D]$/.test(k)) k = k.toUpperCase();
+  if (/^[0-9A-D*#]$/.test(k)) {
+    e.preventDefault();
+    pressKey(k);
+  }
+});
+document.addEventListener('visibilitychange', () => {
+  hwTone(snd.freq);   // hwTone() mutes while the tab is hidden
+  fw.currentFreq = -1;
+});
+
+const STATE_UI = [
+  ['UNSCHARF', ''], ['AUSGANG', 'exit'], ['SCHARF', 'armed'], ['ALARM', 'alarm'], ['ADMIN', 'admin']
+];
+const badgeEl = $('#badge'), triesEl = $('#tries'), pirEl = $('#pirState'), buzEl = $('#buzState');
+let lastUi = '';
+function updateUi() {
+  const [label, cls] = STATE_UI[fw.state];
+  let text = label;
+  if (fw.state === ST.EXIT_DELAY) text += ' ' + secondsLeft(EXIT_DELAY_MS) + ' s';
+  if (fw.state === ST.ALARM) text += ' ' + secondsLeft(ALARM_MS) + ' s';
+  const buz = snd.freq > 0 ? snd.freq + ' Hz' : 'aus';
+  const key = text + cls + fw.wrongTries + motionPin() + buz;
+  if (key === lastUi) return;
+  lastUi = key;
+  badgeEl.textContent = text;
+  badgeEl.className = 'badge ' + cls;
+  triesEl.textContent = fw.wrongTries + '/' + MAX_WRONG_TRIES;
+  pirEl.textContent = motionPin() ? 'HIGH' : 'LOW';
+  buzEl.textContent = buz;
+}
+
+// ===========================================================================
+// 3D scene
+// ===========================================================================
+let scene3d = null;
+let presentTag = () => {};
+const fx = { i2c() {}, spi() {}, pir() {} };
+
+function buildScene() {
+  const V = (x, y, z) => new THREE.Vector3(x, y, z);
+  const UP = V(0, 1, 0);
+  const stage = $('#stage');
+  const canvas = $('#c');
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+
+  const scene = new THREE.Scene();
+  const bgColor = new THREE.Color(0x11151d);
+  scene.background = bgColor.clone();
+  scene.fog = new THREE.Fog(0x11151d, 70, 130);
+  const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 300);
+
+  scene.add(new THREE.HemisphereLight(0xdde8ff, 0x202633, 1.25));
+  const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+  sun.position.set(14, 30, 18);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  Object.assign(sun.shadow.camera, { left: -26, right: 26, top: 26, bottom: -26, near: 1, far: 90 });
+  sun.shadow.bias = -0.0004;
+  scene.add(sun);
+  const fill = new THREE.DirectionalLight(0x9ec5ff, 0.6);
+  fill.position.set(-20, 12, -10);
+  scene.add(fill);
+  const alarmLight = new THREE.PointLight(0xff2525, 0, 0, 0);
+  alarmLight.position.set(2, 10, 0);
+  scene.add(alarmLight);
+
+  // ---- helpers ----
+  const maxAniso = renderer.capabilities.getMaxAnisotropy();
+  const mat = (color, o) => new THREE.MeshStandardMaterial(Object.assign({ color, roughness: 0.6, metalness: 0 }, o || {}));
+  function mesh(geo, m, x, y, z, parent) {
+    const o = new THREE.Mesh(geo, m);
+    o.position.set(x, y, z);
+    o.castShadow = true;
+    o.receiveShadow = true;
+    (parent || scene).add(o);
+    return o;
+  }
+  const box = (w, h, d, m, x, y, z, parent) => mesh(new THREE.BoxGeometry(w, h, d), m, x, y, z, parent);
+  const cyl = (r, h, m, x, y, z, parent, seg) => mesh(new THREE.CylinderGeometry(r, r, h, seg || 24), m, x, y, z, parent);
+  let seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  function canvasTex(w, h, draw) {
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    draw(c.getContext('2d'), w, h);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = maxAniso;
+    return t;
+  }
+  function rr(g, x, y, w, h, r) {
+    g.beginPath();
+    g.moveTo(x + r, y);
+    g.arcTo(x + w, y, x + w, y + h, r);
+    g.arcTo(x + w, y + h, x, y + h, r);
+    g.arcTo(x, y + h, x, y, r);
+    g.arcTo(x, y, x + w, y, r);
+    g.closePath();
+  }
+  // box whose top face shows a canvas texture (texture top = back edge)
+  function texBox(w, h, d, sideColor, tex, x, y, z, parent) {
+    const side = mat(sideColor);
+    const top = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55 });
+    return box(w, h, d, [side, side, top, side, side, side], x, y, z, parent);
+  }
+  const parts = [];          // hover / click targets
+  function part(obj, title, text, onClick) {
+    obj.userData.part = { title, text, onClick };
+    parts.push(obj);
+    return obj;
+  }
+  const labels = [];
+  const labelsEl = $('#labels');
+  function label(text, pos) {
+    const el = document.createElement('div');
+    el.textContent = text;
+    labelsEl.appendChild(el);
+    labels.push({ el, pos });
+  }
+  const gold = mat(0xd4a93c, { metalness: 0.8, roughness: 0.35 });
+  const blackPlastic = mat(0x121418, { roughness: 0.7 });
+  const silver = mat(0xc9ced6, { metalness: 0.85, roughness: 0.3 });
+
+  // ---- table ----
+  const table = new THREE.Mesh(new THREE.PlaneGeometry(140, 140), mat(0x1a2030, { roughness: 0.95 }));
+  table.rotation.x = -Math.PI / 2;
+  table.receiveShadow = true;
+  scene.add(table);
+  const grid = new THREE.GridHelper(80, 40, 0x2a3346, 0x222a3a);
+  grid.position.y = 0.002;
+  scene.add(grid);
+
+  // =========================================================================
+  // Arduino Uno R3 (rotated 180 like in the schematic: USB on the right,
+  // digital header at the front, power/analog header at the back)
+  // =========================================================================
+  const uno = new THREE.Group();
+  uno.position.set(3.5, 0, -2);
+  scene.add(uno);
+  const UNO_W = 6.86, UNO_D = 5.33, UNO_Y = 0.3, UNO_T = 0.16, UNO_TOP = UNO_Y + UNO_T;
+  const uX = (x) => (x + UNO_W / 2) / UNO_W, uZ = (z) => (z + UNO_D / 2) / UNO_D;
+  const pinX = {};
+  ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7'].forEach((n, i) => { pinX[n] = [-3.0 + i * 0.254, 2.42]; });
+  ['D8', 'D9', 'D10', 'D11', 'D12', 'D13', 'GND2', 'AREF', 'SDA', 'SCL'].forEach((n, i) => { pinX[n] = [-0.85 + i * 0.254, 2.42]; });
+  ['A5', 'A4', 'A3', 'A2', 'A1', 'A0'].forEach((n, i) => { pinX[n] = [-2.9 + i * 0.254, -2.42]; });
+  ['VIN', 'GND', 'GND1', '5V', '3V3', 'RESET', 'IOREF', 'NC'].forEach((n, i) => { pinX[n] = [-1.2 + i * 0.254, -2.42]; });
+  const unoPin = (n) => V(uno.position.x + pinX[n][0], UNO_TOP + 0.85, uno.position.z + pinX[n][1]);
+
+  const unoTex = canvasTex(1030, 800, (g, w, h) => {
+    const grad = g.createLinearGradient(0, 0, w, h);
+    grad.addColorStop(0, '#0f5fae');
+    grad.addColorStop(1, '#0a4c8f');
+    g.fillStyle = grad;
+    g.fillRect(0, 0, w, h);
+    g.strokeStyle = 'rgba(130,190,255,.16)';
+    g.lineWidth = 3;
+    for (let i = 0; i < 46; i++) {
+      const x = rnd() * w, y = rnd() * h, l = 60 + rnd() * 220;
+      g.beginPath();
+      g.moveTo(x, y);
+      if (rnd() > 0.5) { g.lineTo(x + l, y); g.lineTo(x + l + 30, y + 30); } else { g.lineTo(x, y + l * 0.6); g.lineTo(x + 30, y + l * 0.6 + 30); }
+      g.stroke();
+    }
+    g.fillStyle = '#eef4ff';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    Object.keys(pinX).forEach((n) => {
+      const [x, z] = pinX[n];
+      const front = z > 0;
+      let t = n.replace(/^D/, '').replace('GND2', 'GND').replace('GND1', 'GND');
+      if (['3', '5', '6', '9', '10', '11'].includes(t) && front) t = '~' + t;
+      g.font = (t.length > 3 ? 'bold 13px' : 'bold 17px') + ' sans-serif';
+      g.fillText(t, uX(x) * w, uZ(z) * h + (front ? -34 : 34));
+    });
+    g.font = 'bold 20px sans-serif';
+    g.fillText('DIGITAL (PWM~)', uX(-1.3) * w, uZ(2.42) * h - 68);
+    g.fillText('ANALOG IN', uX(-2.26) * w, uZ(-2.42) * h + 70);
+    g.fillText('POWER', uX(-0.31) * w, uZ(-2.42) * h + 70);
+    g.font = 'italic 900 150px sans-serif';
+    g.fillText('UNO', uX(-1.2) * w, uZ(0.5) * h);
+    g.font = 'bold 34px sans-serif';
+    g.fillText('ARDUINO', uX(-1.2) * w, uZ(-0.75) * h);
+    g.strokeStyle = '#eef4ff';
+    g.lineWidth = 4;
+    [[-3.0, -2.3], [-3.0, 2.3], [3.0, -2.1], [2.2, 2.3]].forEach(([x, z]) => {
+      g.beginPath();
+      g.arc(uX(x) * w, uZ(z) * h, 22, 0, Math.PI * 2);
+      g.stroke();
+    });
+    g.font = 'bold 16px sans-serif';
+    g.fillText('ON', uX(0.9) * w, uZ(1.35) * h);
+    g.fillText('L', uX(-0.2) * w, uZ(1.35) * h);
+    g.fillText('TX RX', uX(0.3) * w, uZ(1.95) * h + 30);
+  });
+  texBox(UNO_W, UNO_T, UNO_D, 0x0a4a8a, unoTex, 0, UNO_Y + UNO_T / 2, 0, uno);
+  [[-3.0, -2.3], [-3.0, 2.3], [3.0, -2.1], [2.2, 2.3]].forEach(([x, z]) => cyl(0.16, UNO_Y, silver, x, UNO_Y / 2, z, uno, 12));
+  // female headers
+  function header(names) {
+    const xs = names.map((n) => pinX[n][0]);
+    const z = pinX[names[0]][1];
+    const len = xs[xs.length - 1] - xs[0] + 0.254;
+    box(len, 0.85, 0.25, blackPlastic, (xs[0] + xs[xs.length - 1]) / 2, UNO_TOP + 0.425, z, uno);
+  }
+  header(['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7']);
+  header(['D8', 'D9', 'D10', 'D11', 'D12', 'D13', 'GND2', 'AREF', 'SDA', 'SCL']);
+  header(['A5', 'A4', 'A3', 'A2', 'A1', 'A0']);
+  header(['VIN', 'GND', 'GND1', '5V', '3V3', 'RESET', 'IOREF', 'NC']);
+  // ATmega328P in its socket
+  box(3.9, 0.14, 1.05, mat(0x2b2f36), -0.2, UNO_TOP + 0.07, 0.35, uno);
+  box(3.6, 0.36, 0.78, mat(0x16181d, { roughness: 0.45 }), -0.2, UNO_TOP + 0.32, 0.35, uno);
+  for (let i = 0; i < 14; i++) {
+    box(0.1, 0.22, 0.1, silver, -1.85 + i * 0.254, UNO_TOP + 0.18, 0.35 - 0.46, uno);
+    box(0.1, 0.22, 0.1, silver, -1.85 + i * 0.254, UNO_TOP + 0.18, 0.35 + 0.46, uno);
+  }
+  box(1.65, 1.1, 1.2, silver, 3.05, UNO_TOP + 0.55, 1.05, uno);           // USB-B
+  box(1.45, 1.1, 0.9, blackPlastic, 3.0, UNO_TOP + 0.55, -1.55, uno);     // barrel jack
+  cyl(0.28, 0.1, mat(0x050505), 3.73, UNO_TOP + 0.55, -1.55, uno).rotation.z = Math.PI / 2;
+  box(0.9, 0.35, 0.36, silver, 1.4, UNO_TOP + 0.18, -0.8, uno);           // crystal
+  cyl(0.3, 0.6, mat(0x2d3748, { metalness: 0.4 }), 1.9, UNO_TOP + 0.3, -1.9, uno);
+  cyl(0.3, 0.6, mat(0x2d3748, { metalness: 0.4 }), 2.6, UNO_TOP + 0.3, -1.9, uno);
+  box(0.6, 0.22, 0.6, silver, 2.7, UNO_TOP + 0.11, 2.0, uno);             // reset button
+  cyl(0.18, 0.12, mat(0xd6453d), 2.7, UNO_TOP + 0.28, 2.0, uno, 14);
+  const ledMat = (c) => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.1 });
+  const ledOn = box(0.22, 0.1, 0.14, ledMat(0x4ade80), 0.9, UNO_TOP + 0.05, 1.6, uno);
+  const ledL = box(0.22, 0.1, 0.14, ledMat(0xfbbf24), -0.2, UNO_TOP + 0.05, 1.6, uno);
+  const ledTx = box(0.22, 0.1, 0.14, ledMat(0xfbbf24), 0.15, UNO_TOP + 0.05, 1.95, uno);
+  ledOn.material.emissiveIntensity = 2.2;
+  part(uno, 'Arduino Uno R3', 'ATmega328P · 2 KB SRAM, davon 1 KB OLED-Puffer · Serial 9600 Baud · L-LED an D13 flackert bei SPI');
+  label('Arduino Uno R3', V(3.5, 2.2, -2));
+
+  // =========================================================================
+  // Breadboard with the 5 V and GND rails
+  // =========================================================================
+  const BB = { x: 1.5, z: 9.5, w: 16.5, d: 5.5, h: 0.85, cols: 63 };
+  const bbHoleU = (i) => (90 + i * (2048 - 180) / (BB.cols - 1)) / 2048;
+  const bbTex = canvasTex(2048, 683, (g, w, h) => {
+    g.fillStyle = '#ecebe6';
+    g.fillRect(0, 0, w, h);
+    g.fillStyle = '#d9d8d2';
+    g.fillRect(0, h * 0.47, w, h * 0.06);
+    const row = (v, rail) => {
+      for (let i = 0; i < BB.cols; i++) {
+        if (rail && i % 6 === 5) continue;
+        g.fillStyle = '#3b3b3b';
+        g.fillRect(bbHoleU(i) * w - 6, v * h - 6, 12, 12);
+      }
+    };
+    [0.073, 0.127, 0.873, 0.927].forEach((v) => row(v, true));
+    for (let r = 0; r < 5; r++) { row(0.24 + r * 0.05, false); row(0.56 + r * 0.05, false); }
+    g.lineWidth = 5;
+    g.strokeStyle = '#2563eb'; g.beginPath(); g.moveTo(60, h * 0.035); g.lineTo(w - 60, h * 0.035); g.stroke();
+    g.strokeStyle = '#dc2626'; g.beginPath(); g.moveTo(60, h * 0.165); g.lineTo(w - 60, h * 0.165); g.stroke();
+    g.strokeStyle = '#2563eb'; g.beginPath(); g.moveTo(60, h * 0.835); g.lineTo(w - 60, h * 0.835); g.stroke();
+    g.strokeStyle = '#dc2626'; g.beginPath(); g.moveTo(60, h * 0.965); g.lineTo(w - 60, h * 0.965); g.stroke();
+    g.fillStyle = '#8a8a86';
+    g.font = 'bold 22px sans-serif';
+    g.textAlign = 'center';
+    for (let i = 0; i < BB.cols; i += 5) g.fillText(String(i + 1), bbHoleU(i) * w, h * 0.2);
+  });
+  const breadboard = texBox(BB.w, BB.h, BB.d, 0xe4e3de, bbTex, BB.x, BB.h / 2, BB.z);
+  part(breadboard, 'Steckbrett', 'Obere Schienen: GND (blau) und 5 V (rot) für OLED, Buzzer und Bewegungsmelder');
+  label('Steckbrett', V(BB.x, 1.2, BB.z + 3.3));
+  function railPin(x, rail) {
+    const left = BB.x - BB.w / 2;
+    let best = 0, bestD = 1e9;
+    for (let i = 0; i < BB.cols; i++) {
+      if (i % 6 === 5) continue;
+      const d = Math.abs(left + bbHoleU(i) * BB.w - x);
+      if (d < bestD) { bestD = d; best = i; }
+    }
+    const v = rail === 'GND' ? 0.073 : 0.127;
+    return V(left + bbHoleU(best) * BB.w, BB.h, BB.z - BB.d / 2 + v * BB.d);
+  }
+
+  // =========================================================================
+  // 4x4 keypad (membrane)
+  // =========================================================================
+  const keypad = new THREE.Group();
+  keypad.position.set(-9.5, 0, -1.5);
+  scene.add(keypad);
+  const kpTex = canvasTex(512, 564, (g, w, h) => {
+    g.fillStyle = '#34373e';
+    g.fillRect(0, 0, w, h);
+    g.strokeStyle = '#5a5e67';
+    g.lineWidth = 10;
+    rr(g, 18, 18, w - 36, h - 36, 26);
+    g.stroke();
+  });
+  texBox(6.9, 0.1, 7.6, 0x2c2f35, kpTex, 0, 0.05, 0, keypad);
+  const keyMeshes = {};
+  KEYS.forEach((row, r) => row.forEach((k, c) => {
+    const col = /[0-9]/.test(k) ? '#3d7fe0' : '#d9433f';
+    const tex = canvasTex(128, 128, (g, w, h) => {
+      g.fillStyle = col;
+      g.fillRect(0, 0, w, h);
+      const grad = g.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, 'rgba(255,255,255,.22)');
+      grad.addColorStop(1, 'rgba(0,0,0,.12)');
+      g.fillStyle = grad;
+      g.fillRect(0, 0, w, h);
+      g.fillStyle = '#fff';
+      g.font = 'bold 76px sans-serif';
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillText(k, w / 2, h / 2 + 4);
+    });
+    const km = texBox(1.28, 0.14, 1.38, new THREE.Color(col).getHex(), tex, (c - 1.5) * 1.6, 0.17, -0.35 + (r - 1.5) * 1.72, keypad);
+    km.material[2].emissive = new THREE.Color(0xffffff);
+    km.material[2].emissiveMap = tex;
+    km.material[2].emissiveIntensity = 0;
+    km.material[2].needsUpdate = true;
+    km.userData.base = km.position.y;
+    km.userData.pressT = -1e9;
+    km.userData.rc = [r, c];
+    part(km, 'Taste ' + k, 'Reihe R' + (r + 1) + ' + Spalte C' + (c + 1) + ' · anklicken', () => pressKey(k));
+    keyMeshes[k] = km;
+  }));
+  box(2.2, 0.02, 1.3, mat(0xa3a8b0, { roughness: 0.4 }), 0, 0.02, 4.45, keypad);   // ribbon tail
+  box(2.3, 0.35, 0.42, blackPlastic, 0, 0.18, 5.25, keypad);
+  const kpPins = [];
+  for (let i = 0; i < 8; i++) {
+    const x = -0.889 + i * 0.254;
+    box(0.07, 0.07, 0.55, gold, x, 0.18, 5.7, keypad);
+    kpPins.push(V(keypad.position.x + x, 0.18, keypad.position.z + 5.98));
+  }
+  part(keypad, '4x4-Keypad', 'R1–R4 → D9–D6, C1–C4 → D5–D2 · Matrix-Scan ohne Keypad-Library (spart ~120 Byte SRAM)');
+  label('4x4-Keypad', V(-12.2, 0.6, 3.4));
+
+  // =========================================================================
+  // OLED 1.3" SH1106
+  // =========================================================================
+  const oled = new THREE.Group();
+  oled.position.set(-3.6, 0, -2.2);
+  scene.add(oled);
+  const oledBoardTex = canvasTex(512, 498, (g, w, h) => {
+    g.fillStyle = '#1b4f8f';
+    g.fillRect(0, 0, w, h);
+    g.fillStyle = '#e8f0ff';
+    g.font = 'bold 15px sans-serif';
+    g.textAlign = 'center';
+    ['GND', 'VCC', 'SCL', 'SDA'].forEach((t, i) => g.fillText(t, w / 2 + (i - 1.5) * 37.2, 90));
+    g.strokeStyle = '#e8f0ff';
+    g.lineWidth = 6;
+    [[40, 40], [w - 40, 40], [40, h - 40], [w - 40, h - 40]].forEach(([x, y]) => { g.beginPath(); g.arc(x, y, 18, 0, Math.PI * 2); g.stroke(); });
+  });
+  texBox(3.5, 0.12, 3.4, 0x1b4f8f, oledBoardTex, 0, 0.06, 0, oled);
+  box(3.1, 0.1, 1.95, mat(0x07080b, { roughness: 0.2 }), 0, 0.17, 0.35, oled);
+  oledTex = new THREE.CanvasTexture(oledCanvas);
+  oledTex.colorSpace = THREE.SRGBColorSpace;
+  oledTex.magFilter = THREE.NearestFilter;
+  oledTex.minFilter = THREE.LinearFilter;
+  const screen = new THREE.Mesh(new THREE.PlaneGeometry(2.94, 1.47), new THREE.MeshBasicMaterial({ map: oledTex, toneMapped: false }));
+  screen.rotation.x = -Math.PI / 2;
+  screen.position.set(0, 0.225, 0.3);
+  oled.add(screen);
+  box(1.02, 0.25, 0.25, blackPlastic, 0, 0.245, -1.45, oled);
+  const oledPins = {};
+  ['GND', 'VCC', 'SCL', 'SDA'].forEach((n, i) => {
+    const x = -0.381 + i * 0.254;
+    box(0.06, 0.6, 0.06, gold, x, 0.55, -1.45, oled);
+    oledPins[n] = V(oled.position.x + x, 0.85, oled.position.z - 1.45);
+  });
+  part(oled, 'OLED 1,3" SH1106', '128x64 · I²C-Adresse 0x3C · SDA → A4, SCL → A5 · Adafruit_SH1106G');
+  label('OLED SH1106', V(-3.6, 1.5, -4.2));
+
+  // =========================================================================
+  // RFID-RC522
+  // =========================================================================
+  const rc = new THREE.Group();
+  rc.position.set(3.2, 0, -9.0);
+  scene.add(rc);
+  const RC_PINS = ['SDA', 'SCK', 'MOSI', 'MISO', 'IRQ', 'GND', 'RST', '3.3V'];
+  const rcTex = canvasTex(512, 768, (g, w, h) => {
+    g.fillStyle = '#1560bd';
+    g.fillRect(0, 0, w, h);
+    g.strokeStyle = '#8fbaf0';
+    g.lineWidth = 7;
+    for (let i = 0; i < 4; i++) { rr(g, 50 + i * 20, 60 + i * 20, w - 100 - i * 40, 400 - i * 40, 40); g.stroke(); }
+    g.fillStyle = '#0c0e12';
+    g.fillRect(200, 500, 110, 110);
+    g.fillStyle = '#e8f0ff';
+    g.font = 'bold 30px sans-serif';
+    g.textAlign = 'center';
+    g.fillText('RFID-RC522', w / 2, 36);
+    g.font = 'bold 19px sans-serif';
+    RC_PINS.forEach((t, i) => {
+      g.save();
+      g.translate(w / 2 + (i - 3.5) * 32.5, h - 70);
+      g.rotate(-Math.PI / 2);
+      g.fillText(t, 0, 6);
+      g.restore();
+    });
+    g.strokeStyle = '#e8f0ff';
+    g.lineWidth = 6;
+    [[44, 44], [w - 44, 44], [44, h - 150], [w - 44, h - 150]].forEach(([x, y]) => { g.beginPath(); g.arc(x, y, 20, 0, Math.PI * 2); g.stroke(); });
+  });
+  texBox(4.0, 0.16, 6.0, 0x1358ad, rcTex, 0, 0.08, 0, rc);
+  box(0.8, 0.12, 0.8, blackPlastic, 0.0, 0.22, 1.0, rc);
+  box(2.1, 0.25, 0.25, blackPlastic, 0, 0.285, 2.75, rc);
+  const rcPins = {};
+  RC_PINS.forEach((n, i) => {
+    const x = -0.889 + i * 0.254;
+    box(0.06, 0.6, 0.06, gold, x, 0.6, 2.75, rc);
+    rcPins[n] = V(rc.position.x + x, 0.9, rc.position.z + 2.75);
+  });
+  const rfidRing = new THREE.Mesh(new THREE.RingGeometry(1.2, 1.3, 48), new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0, depthWrite: false }));
+  rfidRing.rotation.x = -Math.PI / 2;
+  rfidRing.position.set(rc.position.x, 0.2, rc.position.z - 0.8);
+  scene.add(rfidRing);
+  part(rc, 'RFID-RC522', 'SPI: MOSI D11, MISO D12, SCK D13 · SS A0 · RST A1 · VCC an 3,3 V, nicht 5 V!');
+  label('RFID-RC522', V(3.2, 1.0, -12.4));
+
+  // =========================================================================
+  // passive buzzer module
+  // =========================================================================
+  const buz = new THREE.Group();
+  buz.position.set(6.2, 0, 4.3);
+  scene.add(buz);
+  box(1.8, 0.1, 2.0, mat(0x15171b), 0, 0.05, 0, buz);
+  const buzBody = cyl(0.62, 0.85, mat(0x0b0c0f, { roughness: 0.5 }), 0, 0.53, -0.15, buz, 32);
+  cyl(0.12, 0.02, mat(0x3a3f47), 0, 0.97, -0.15, buz, 16);
+  const buzPins = {};
+  ['S', '+', '-'].forEach((n, i) => {
+    const x = -0.254 + i * 0.254;
+    box(0.06, 0.6, 0.06, gold, x, 0.4, 0.8, buz);
+    buzPins[n] = V(buz.position.x + x, 0.7, buz.position.z + 0.8);
+  });
+  const buzRings = [0, 1, 2].map(() => {
+    const m = new THREE.Mesh(new THREE.RingGeometry(0.66, 0.74, 40), new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
+    m.rotation.x = -Math.PI / 2;
+    m.position.set(buz.position.x, 1.0, buz.position.z - 0.15);
+    scene.add(m);
+    return m;
+  });
+  part(buz, 'Passiver Buzzer', 'Signal an D10 · tone()/noTone() · Achtung: SPI.begin() setzt D10 auf HIGH');
+  label('Buzzer', V(6.2, 1.9, 4.1));
+
+  // =========================================================================
+  // PIR motion sensor (HC-SR501 style)
+  // =========================================================================
+  const pir = new THREE.Group();
+  pir.position.set(11, 0, 4.6);
+  scene.add(pir);
+  box(3.2, 0.12, 2.4, mat(0x157a3a), 0, 0.06, 0, pir);
+  box(2.3, 0.22, 2.3, mat(0xeeeeee, { roughness: 0.5 }), 0.15, 0.23, 0, pir);
+  const domeMat = new THREE.MeshStandardMaterial({ color: 0xf4f5f7, roughness: 0.35, flatShading: true, emissive: 0xff3030, emissiveIntensity: 0 });
+  mesh(new THREE.SphereGeometry(1.05, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), domeMat, 0.15, 0.34, 0, pir);
+  const pirPins = {};
+  ['VCC', 'OUT', 'GND'].forEach((n, i) => {
+    const z = -0.254 + i * 0.254;
+    box(0.06, 0.6, 0.06, gold, -1.42, 0.4, z, pir);
+    pirPins[n] = V(pir.position.x - 1.42, 0.7, pir.position.z + z);
+  });
+  const pirRing = new THREE.Mesh(new THREE.RingGeometry(1.3, 1.45, 48), new THREE.MeshBasicMaterial({ color: 0xf87171, transparent: true, opacity: 0, depthWrite: false }));
+  pirRing.rotation.x = -Math.PI / 2;
+  pirRing.position.set(pir.position.x + 0.15, 0.05, pir.position.z);
+  scene.add(pirRing);
+  part(pir, 'Bewegungsmelder', 'OUT → A2 (active HIGH) · löst nur im Zustand SCHARF aus · anklicken = Bewegung', triggerMotion);
+  label('Bewegungsmelder', V(11, 1.9, 3.1));
+
+  // =========================================================================
+  // 9 V battery
+  // =========================================================================
+  const bat = new THREE.Group();
+  bat.position.set(12.4, 0, -3.2);
+  scene.add(bat);
+  box(2.6, 1.75, 3.1, mat(0x1e1f24, { roughness: 0.4 }), 0, 0.875, 0.85, bat);
+  box(2.6, 1.75, 1.75, mat(0xc27c3a, { roughness: 0.35, metalness: 0.3 }), 0, 0.875, -1.55, bat);
+  cyl(0.35, 0.3, silver, -0.6, 0.9, -2.55, bat).rotation.x = Math.PI / 2;
+  cyl(0.35, 0.3, silver, 0.6, 0.9, -2.55, bat, 6).rotation.x = Math.PI / 2;
+  box(2.2, 1.0, 0.4, blackPlastic, 0, 0.9, -2.85, bat);
+  part(bat, '9V-Block', 'Versorgung über den Hohlstecker des Uno');
+  label('9V-Block', V(12.4, 2.3, -3.2));
+
+  // =========================================================================
+  // wires
+  // =========================================================================
+  const wires = [];
+  const dupGeo = new THREE.BoxGeometry(0.22, 0.55, 0.22);
+  const dupMat = mat(0x111111, { roughness: 0.5 });
+  function dupont(p, dir) {
+    const m = new THREE.Mesh(dupGeo, dupMat);
+    m.position.copy(p).addScaledVector(dir, 0.275);
+    m.quaternion.setFromUnitVectors(UP, dir);
+    m.castShadow = true;
+    scene.add(m);
+  }
+  // wire from an Uno/rail pin (a) to a module pin (b), t = 0 sits at a
+  // optional via points route a wire around parts, like in the schematic
+  function wire(a, b, color, title, text, dirB, via) {
+    const dirA = UP;
+    dirB = dirB ? dirB.clone().normalize() : UP;
+    const pa = a.clone().addScaledVector(dirA, 0.55), pb = b.clone().addScaledVector(dirB, 0.55);
+    let curve;
+    if (via) {
+      curve = new THREE.CatmullRomCurve3([pa, pa.clone().addScaledVector(dirA, 0.6), ...via, pb.clone().addScaledVector(dirB, 0.6), pb], false, 'centripetal');
+    } else {
+      const h = 1.0 + pa.distanceTo(pb) * 0.12;
+      curve = new THREE.CubicBezierCurve3(pa, pa.clone().addScaledVector(dirA, h), pb.clone().addScaledVector(dirB, h), pb);
+    }
+    const m = new THREE.MeshStandardMaterial({ color, roughness: 0.45, emissive: color, emissiveIntensity: 0.06 });
+    const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 64, 0.05, 8, false), m);
+    tube.castShadow = true;
+    scene.add(tube);
+    dupont(a, dirA);
+    dupont(b, dirB);
+    const w = { curve, color, mat: m, glow: 0 };
+    part(tube, title, text);
+    wires.push(w);
+    return w;
+  }
+  const kpDir = V(0, 0.55, 1);
+  const rowWires = [], colWires = [];
+  const KP_COLORS = [0x86efac, 0xa78bfa, 0xbef264, 0xf0abfc, 0x5eead4, 0x60a5fa, 0x84cc16, 0x2dd4bf];
+  ['D9', 'D8', 'D7', 'D6'].forEach((p, i) => rowWires.push(wire(unoPin(p), kpPins[i], KP_COLORS[i], p + ' ↔ R' + (i + 1), 'Keypad-Reihe ' + (i + 1) + ' (INPUT_PULLUP)', kpDir)));
+  ['D5', 'D4', 'D3', 'D2'].forEach((p, i) => colWires.push(wire(unoPin(p), kpPins[4 + i], KP_COLORS[4 + i], p + ' ↔ C' + (i + 1), 'Keypad-Spalte ' + (i + 1) + ' (wird beim Scan auf LOW gezogen)', kpDir)));
+  const wSDA = wire(unoPin('A4'), oledPins.SDA, 0xfb7185, 'A4 → SDA', 'I²C-Daten zum OLED');
+  const wSCL = wire(unoPin('A5'), oledPins.SCL, 0xe879f9, 'A5 → SCL', 'I²C-Takt zum OLED');
+  const spi = [
+    wire(unoPin('D11'), rcPins.MOSI, 0x22d3ee, 'D11 → MOSI', 'SPI, Uno → RC522'),
+    wire(unoPin('D12'), rcPins.MISO, 0x34d399, 'D12 ← MISO', 'SPI, RC522 → Uno'),
+    wire(unoPin('D13'), rcPins.SCK, 0xa3e635, 'D13 → SCK', 'SPI-Takt (die L-LED hängt auch an D13)'),
+    wire(unoPin('A0'), rcPins.SDA, 0xfb923c, 'A0 → SDA/SS', 'Chip Select des RC522'),
+    wire(unoPin('A1'), rcPins.RST, 0xf472b6, 'A1 → RST', 'Reset des RC522 (Taste B = Soft-Reset)')
+  ];
+  wire(unoPin('3V3'), rcPins['3.3V'], 0xfca5a5, '3,3 V → RC522', 'Nur 3,3 V! 5 V zerstört das Modul');
+  wire(unoPin('GND1'), rcPins.GND, 0x475569, 'GND → RC522', 'Masse');
+  const wBuz = wire(unoPin('D10'), buzPins.S, 0xfacc15, 'D10 → Buzzer S', 'tone() erzeugt hier die Rechteckfrequenz', V(0, 0.4, 1));
+  const wPir = wire(unoPin('A2'), pirPins.OUT, 0xf97316, 'A2 ← PIR OUT', 'HIGH bei Bewegung (war D11, das ist jetzt MOSI)');
+  wire(unoPin('5V'), railPin(-3.0, '5V'), 0xdc2626, '5V → Schiene', '5 V-Versorgung für OLED, Buzzer, PIR');
+  wire(unoPin('GND'), railPin(-3.6, 'GND'), 0x475569, 'GND → Schiene', 'gemeinsame Masse');
+  // OLED power runs around the left of the keypad, as in the schematic
+  wire(railPin(-6.0, '5V'), oledPins.VCC, 0xdc2626, '5V → OLED VCC', '', null,
+    [V(-6.6, 1.2, 6.6), V(-14.2, 0.9, 5.6), V(-14.2, 0.9, -6.2), V(-4.2, 1.5, -5.6)]);
+  wire(railPin(-6.6, 'GND'), oledPins.GND, 0x475569, 'GND → OLED GND', '', null,
+    [V(-7.2, 1.2, 6.3), V(-13.8, 0.8, 5.3), V(-13.8, 0.8, -5.9), V(-4.5, 1.4, -5.3)]);
+  wire(railPin(6.4, '5V'), buzPins['+'], 0xdc2626, '5V → Buzzer +', '', V(0, 0.4, 1));
+  wire(railPin(7.0, 'GND'), buzPins['-'], 0x475569, 'GND → Buzzer −', '', V(0, 0.4, 1));
+  wire(railPin(8.6, '5V'), pirPins.VCC, 0xdc2626, '5V → PIR VCC', '', V(-1, 0.5, 0));
+  wire(railPin(9.3, 'GND'), pirPins.GND, 0x475569, 'GND → PIR GND', '', V(-1, 0.5, 0));
+  // battery clip to the barrel jack
+  const jack = V(uno.position.x + 3.75, UNO_TOP + 0.55, uno.position.z - 1.55);
+  [[0xdc2626, -0.4], [0x1f2937, 0.4]].forEach(([c, dx]) => {
+    const a = V(bat.position.x + dx, 0.9, bat.position.z - 3.1);
+    const curve = new THREE.CubicBezierCurve3(a, a.clone().add(V(0, 0.3, -1.5)), jack.clone().add(V(2.5, 0.2, 0)), jack.clone().add(V(0.3, 0, 0)));
+    const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 40, 0.07, 8, false), mat(c));
+    tube.castShadow = true;
+    scene.add(tube);
+  });
+
+  // travelling signal pulses
+  const pulses = [];
+  const pulseGeo = new THREE.SphereGeometry(0.13, 12, 8);
+  function pulse(w, reverse, dur) {
+    const m = new THREE.Mesh(pulseGeo, new THREE.MeshBasicMaterial({ color: w.color, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
+    scene.add(m);
+    pulses.push({ m, w, t0: performance.now(), dur: dur || 650, reverse });
+    w.glow = 1;
+  }
+  let lastI2c = 0;
+  fx.i2c = () => {
+    const t = performance.now();
+    if (t - lastI2c < 220) return;
+    lastI2c = t;
+    pulse(wSDA, false, 450);
+    pulse(wSCL, false, 450);
+  };
+  fx.spi = () => {
+    spi.forEach((w, i) => pulse(w, i === 1, 450 + i * 70));
+    hw.lUntil = millis() + 350;
+  };
+  fx.pir = () => pulse(wPir, true, 600);
+
+  // =========================================================================
+  // transponders (click to hold them to the reader)
+  // =========================================================================
+  const antenna = V(rc.position.x, 0, rc.position.z - 0.8);
+  function cardTex(title, accent, uid, note) {
+    return canvasTex(432, 684, (g, w, h) => {
+      g.fillStyle = '#f7f8fa';
+      g.fillRect(0, 0, w, h);
+      g.fillStyle = accent;
+      g.fillRect(0, 0, w, 150);
+      g.fillStyle = '#fff';
+      g.font = '900 64px sans-serif';
+      g.fillText('GAS', 30, 100);
+      g.fillStyle = '#d6ac45';
+      rr(g, 40, 220, 110, 84, 12);
+      g.fill();
+      g.fillStyle = '#1f2937';
+      g.font = 'bold 46px sans-serif';
+      g.fillText(title, 40, 400);
+      g.font = '32px monospace';
+      g.fillText(uid, 40, 460);
+      g.fillStyle = '#6b7280';
+      g.font = '28px sans-serif';
+      g.fillText(note, 40, 520);
+    });
+  }
+  const tags = [];
+  function addTag(id, group, rest, rotY, hoverY) {
+    group.position.copy(rest);
+    group.rotation.y = rotY;
+    scene.add(group);
+    const tag = { id, group, rest: rest.clone(), rotY, hover: V(antenna.x, hoverY, antenna.z), anim: null };
+    part(group, TAGS[id].name, 'UID ' + uidHex(TAGS[id].uid) + ' · anklicken = an den Leser halten', () => presentTag(id));
+    label(TAGS[id].name, { get: () => group.position.clone().add(V(0, 0.8, 0)) });
+    tags.push(tag);
+  }
+  function card(title, accent, uid, note) {
+    const g = new THREE.Group();
+    const side = mat(0xf2f3f5);
+    const top = new THREE.MeshStandardMaterial({ map: cardTex(title, accent, uid, note), roughness: 0.4 });
+    const m = new THREE.Mesh(new THREE.BoxGeometry(5.4, 0.08, 8.56), [side, side, top, side, side, side]);
+    m.castShadow = true;
+    m.receiveShadow = true;
+    g.add(m);
+    return g;
+  }
+  addTag('A', card('Karte A', '#1d4ed8', uidHex(TAGS.A.uid), 'ab Werk gespeichert'), V(-2.2, 0.05, -10.4), 0.06, 1.5);
+  addTag('B', card('Karte B', '#ea580c', uidHex(TAGS.B.uid), 'noch unbekannt'), V(-8.5, 0.05, -10.8), -0.1, 1.5);
+  const fob = new THREE.Group();
+  const fobShape = new THREE.Shape();
+  fobShape.absarc(0, 0, 1.45, 0, Math.PI * 2, false);
+  const fobHole = new THREE.Path();
+  fobHole.absarc(0, 0.95, 0.28, 0, Math.PI * 2, true);
+  fobShape.holes.push(fobHole);
+  const fobMesh = new THREE.Mesh(new THREE.ExtrudeGeometry(fobShape, { depth: 0.3, bevelEnabled: true, bevelSize: 0.08, bevelThickness: 0.08, bevelSegments: 3, curveSegments: 32 }), mat(0x2563eb, { roughness: 0.35 }));
+  fobMesh.rotation.x = -Math.PI / 2;
+  fobMesh.castShadow = true;
+  fob.add(fobMesh);
+  const fobRing = new THREE.Mesh(new THREE.TorusGeometry(0.75, 0.06, 8, 32), silver);
+  fobRing.rotation.x = -Math.PI / 2;
+  fobRing.position.set(0, 0.25, -1.6);
+  fob.add(fobRing);
+  addTag('F', fob, V(8.8, 0.1, -9.6), 0.4, 1.3);
+
+  let tagBusy = false;
+  presentTag = (id) => {
+    audioUnlock();
+    const tag = tags.find((t) => t.id === id);
+    if (!tag || tagBusy) return;
+    tagBusy = true;
+    tag.anim = { t0: performance.now(), fired: false };
+  };
+  const ease = (k) => k * k * (3 - 2 * k);
+  function updateTags(t) {
+    tags.forEach((tag) => {
+      const a = tag.anim;
+      if (!a) return;
+      const e = t - a.t0, T1 = 700, T2 = 1500, T3 = 700;
+      let k;
+      if (e < T1) {
+        k = ease(e / T1);
+      } else if (e < T1 + T2) {
+        k = 1;
+        if (!a.fired) {
+          a.fired = true;
+          io.card = TAGS[tag.id].uid.slice();
+        }
+      } else if (e < T1 + T2 + T3) {
+        k = 1 - ease((e - T1 - T2) / T3);
+      } else {
+        k = 0;
+        tag.anim = null;
+        tagBusy = false;
+      }
+      tag.group.position.lerpVectors(tag.rest, tag.hover, k);
+      tag.group.position.y += Math.sin(k * Math.PI) * 2.2;
+      tag.group.rotation.y = tag.rotY * (1 - k);
+      rfidRing.material.opacity = k > 0.9 ? 0.9 * Math.abs(Math.sin(t / 160)) : 0;
+    });
+  }
+
+  // =========================================================================
+  // camera: small orbit control (drag = rotate, right drag = pan, wheel = zoom)
+  // =========================================================================
+  const VIEWS = {
+    all: { target: V(0.5, 0, -1), r: 42, theta: 0.0, phi: 0.82 },
+    keypad: { target: V(-9.5, 0, -1.2), r: 14, theta: 0.1, phi: 0.62 },
+    oled: { target: V(-3.6, 0.3, -1.9), r: 8.5, theta: 0.0, phi: 0.45 },
+    rfid: { target: V(3.2, 0.5, -9.5), r: 15, theta: 0.35, phi: 0.72 },
+    uno: { target: V(3.5, 0.6, -1.8), r: 12, theta: -0.45, phi: 0.78 }
+  };
+  const view = { target: VIEWS.all.target.clone(), r: VIEWS.all.r, theta: VIEWS.all.theta, phi: VIEWS.all.phi };
+  let viewAnim = null, autoRotate = false;
+  function applyView() {
+    const s = Math.sin(view.phi);
+    camera.position.set(view.target.x + view.r * s * Math.sin(view.theta), view.target.y + view.r * Math.cos(view.phi), view.target.z + view.r * s * Math.cos(view.theta));
+    camera.lookAt(view.target);
+  }
+  function goTo(name) {
+    const to = VIEWS[name];
+    let dTheta = ((to.theta - view.theta) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
+    viewAnim = { t0: performance.now(), from: { target: view.target.clone(), r: view.r, theta: view.theta, phi: view.phi }, to, dTheta };
+  }
+  document.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => goTo(b.dataset.view)));
+  $('#toggleLabels').addEventListener('click', (e) => {
+    const on = labelsEl.classList.toggle('off') === false;
+    e.currentTarget.setAttribute('aria-pressed', String(on));
+  });
+  $('#toggleRotate').addEventListener('click', (e) => {
+    autoRotate = !autoRotate;
+    e.currentTarget.setAttribute('aria-pressed', String(autoRotate));
+  });
+
+  const ray = new THREE.Raycaster();
+  const ndc = new THREE.Vector2();
+  function pick(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    ndc.set(((clientX - rect.left) / rect.width) * 2 - 1, -((clientY - rect.top) / rect.height) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    const hits = ray.intersectObjects(parts, true);
+    for (const h of hits) {
+      let o = h.object;
+      while (o && !o.userData.part) o = o.parent;
+      if (o) return o.userData.part;
+    }
+    return null;
+  }
+  const tip = $('#tip');
+  const pointers = new Map();
+  let down = null, moved = false, mode = 'rotate', pinch = 0;
+  canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+  canvas.addEventListener('pointerdown', (e) => {
+    canvas.setPointerCapture(e.pointerId);
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    down = { x: e.clientX, y: e.clientY, button: e.button };
+    moved = false;
+    mode = e.button === 2 || e.shiftKey ? 'pan' : 'rotate';
+    if (pointers.size === 2) {
+      const [p, q] = [...pointers.values()];
+      pinch = Math.hypot(p.x - q.x, p.y - q.y);
+    }
+    viewAnim = null;
+    audioUnlock();
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    const p = pointers.get(e.pointerId);
+    if (!p) {
+      const hit = pick(e.clientX, e.clientY);
+      canvas.classList.toggle('pointer', !!(hit && hit.onClick));
+      if (hit) {
+        const rect = stage.getBoundingClientRect();
+        tip.hidden = false;
+        tip.innerHTML = '';
+        const b = document.createElement('b');
+        b.textContent = hit.title;
+        tip.appendChild(b);
+        if (hit.text) {
+          const s = document.createElement('span');
+          s.textContent = hit.text;
+          tip.appendChild(s);
+        }
+        const x = Math.min(e.clientX - rect.left + 14, rect.width - tip.offsetWidth - 8);
+        tip.style.left = x + 'px';
+        tip.style.top = (e.clientY - rect.top + 16) + 'px';
+      } else {
+        tip.hidden = true;
+      }
+      return;
+    }
+    const dx = e.clientX - p.x, dy = e.clientY - p.y;
+    p.x = e.clientX;
+    p.y = e.clientY;
+    if (Math.hypot(e.clientX - down.x, e.clientY - down.y) > 5) moved = true;
+    tip.hidden = true;
+    if (pointers.size === 2) {
+      const [a, b] = [...pointers.values()];
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (pinch > 0) view.r = THREE.MathUtils.clamp(view.r * pinch / d, 5, 75);
+      pinch = d;
+    } else if (mode === 'rotate') {
+      view.theta -= dx * 0.006;
+      view.phi = THREE.MathUtils.clamp(view.phi - dy * 0.006, 0.12, 1.45);
+    } else {
+      const k = view.r * 0.0016;
+      const right = V(Math.cos(view.theta), 0, -Math.sin(view.theta));
+      const fwd = V(Math.sin(view.theta), 0, Math.cos(view.theta));
+      view.target.addScaledVector(right, -dx * k).addScaledVector(fwd, -dy * k);
+    }
+  });
+  function endPointer(e) {
+    if (!pointers.has(e.pointerId)) return;
+    pointers.delete(e.pointerId);
+    if (pointers.size < 2) pinch = 0;
+    if (!moved && down && down.button === 0 && pointers.size === 0) {
+      const hit = pick(e.clientX, e.clientY);
+      if (hit && hit.onClick) hit.onClick();
+    }
+  }
+  canvas.addEventListener('pointerup', endPointer);
+  canvas.addEventListener('pointercancel', endPointer);
+  canvas.addEventListener('pointerleave', () => { tip.hidden = true; });
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    viewAnim = null;
+    view.r = THREE.MathUtils.clamp(view.r * Math.exp(e.deltaY * 0.001), 5, 75);
+  }, { passive: false });
+
+  function resize() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(stage);
+  resize();
+
+  // =========================================================================
+  // per-frame update
+  // =========================================================================
+  const tmp = new THREE.Vector3();
+  const alarmBg = new THREE.Color(0x2a1116);
+  let lastBuzPulse = 0;
+  function update() {
+    const t = performance.now();
+    if (viewAnim) {
+      const k = ease(Math.min(1, (t - viewAnim.t0) / 800));
+      const f = viewAnim.from, to = viewAnim.to;
+      view.target.lerpVectors(f.target, to.target, k);
+      view.r = f.r + (to.r - f.r) * k;
+      view.theta = f.theta + viewAnim.dTheta * k;
+      view.phi = f.phi + (to.phi - f.phi) * k;
+      if (k >= 1) viewAnim = null;
+    } else if (autoRotate && pointers.size === 0) {
+      view.theta += 0.0016;
+    }
+    applyView();
+
+    // keys spring back after a press
+    Object.values(keyMeshes).forEach((km) => {
+      const e = (t - km.userData.pressT) / 180;
+      const k = e >= 0 && e < 1 ? Math.sin(e * Math.PI) : 0;
+      km.position.y = km.userData.base - k * 0.08;
+      km.material[2].emissiveIntensity = k * 0.35;
+    });
+
+    updateTags(t);
+
+    // wires: move pulses, let the glow fade
+    for (let i = pulses.length - 1; i >= 0; i--) {
+      const p = pulses[i];
+      const k = (t - p.t0) / p.dur;
+      if (k >= 1) {
+        scene.remove(p.m);
+        p.m.material.dispose();
+        pulses.splice(i, 1);
+        continue;
+      }
+      p.m.position.copy(p.w.curve.getPointAt(p.reverse ? 1 - k : k));
+      p.m.scale.setScalar(1 + Math.sin(k * Math.PI) * 0.5);
+    }
+    wires.forEach((w) => {
+      w.glow = Math.max(0, w.glow - 0.025);
+      w.mat.emissiveIntensity = 0.06 + w.glow * 0.8;
+    });
+
+    // buzzer: rings while the pin carries a frequency
+    const buzzing = snd.freq > 0;
+    if (buzzing && t - lastBuzPulse > 180) {
+      lastBuzPulse = t;
+      pulse(wBuz, false, 400);
+    }
+    buzRings.forEach((m, i) => {
+      const k = ((t / 700) + i / 3) % 1;
+      m.scale.setScalar(1 + k * 2.2);
+      m.material.opacity = buzzing ? (1 - k) * 0.85 : Math.max(0, m.material.opacity - 0.05);
+    });
+    buzBody.scale.y = buzzing ? 1 + Math.sin(t * 0.9) * 0.015 : 1;
+
+    // PIR
+    const motion = motionPin();
+    domeMat.emissiveIntensity = motion ? 0.35 + Math.sin(t / 90) * 0.15 : 0;
+    const pk = (t / 900) % 1;
+    pirRing.scale.setScalar(1 + pk * 2.5);
+    pirRing.material.opacity = motion ? (1 - pk) * 0.8 : 0;
+
+    // board LEDs
+    ledL.material.emissiveIntensity = millis() < hw.lUntil ? 2.2 * (Math.random() > 0.4 ? 1 : 0.2) : 0.08;
+    ledTx.material.emissiveIntensity = millis() < hw.txUntil ? 2.2 : 0.08;
+
+    // alarm: flashing red room light, in step with the OLED flash
+    if (fw.state === ST.ALARM) {
+      const flash = Math.floor(millis() / 250) % 2 === 0;
+      alarmLight.intensity = flash ? 2.2 : 0.4;
+      scene.background.copy(bgColor).lerp(alarmBg, flash ? 1 : 0.4);
+    } else {
+      alarmLight.intensity = 0;
+      scene.background.copy(bgColor);
+    }
+
+    renderer.render(scene, camera);
+
+    // HTML labels follow their 3D anchor
+    if (!labelsEl.classList.contains('off')) {
+      const w = stage.clientWidth, h = stage.clientHeight;
+      labels.forEach((l) => {
+        tmp.copy(l.pos.get ? l.pos.get() : l.pos).project(camera);
+        if (tmp.z > 1) {
+          l.el.style.display = 'none';
+          return;
+        }
+        l.el.style.display = '';
+        l.el.style.transform = 'translate(' + ((tmp.x * 0.5 + 0.5) * w).toFixed(1) + 'px,' + ((-tmp.y * 0.5 + 0.5) * h).toFixed(1) + 'px) translate(-50%,-100%)';
+      });
+    }
+  }
+
+  return {
+    update,
+    pressKey(k) {
+      const km = keyMeshes[k];
+      if (!km) return;
+      km.userData.pressT = performance.now();
+      const [r, c] = km.userData.rc;
+      pulse(rowWires[r], true, 500);
+      pulse(colWires[c], false, 500);
+    }
+  };
+}
+
+// ===========================================================================
+// boot
+// ===========================================================================
+function frame() {
+  requestAnimationFrame(frame);
+  loop();
+  if (scene3d) scene3d.update();
+  updateUi();
+}
+
+try {
+  if (typeof THREE === 'undefined') throw new Error('three.min.js fehlt');
+  scene3d = buildScene();
+  $('#loading').hidden = true;
+} catch (e) {
+  $('#loading').textContent = '3D-Ansicht nicht verfügbar (' + e.message + '). Die Simulation rechts funktioniert trotzdem.';
+  console.error(e);
+}
+setup();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

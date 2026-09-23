@@ -1,0 +1,2 @@
+# three.js is a vendored library, keep it out of the language stats
+docs/viewer/three.min.js linguist-vendored
