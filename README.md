@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="https://rexi255.github.io/Arduino-Security-System/"><b>▶ Open the 3D model in your browser</b></a>
+  <a href="https://bbz-aifs51.github.io/LF7-Projekt_GAS/"><b>▶ Open the 3D model in your browser</b></a>
   &nbsp;·&nbsp; <a href="MDs/anleitung.md">User manual (German)</a>
   &nbsp;·&nbsp; <a href="Schaltplan/SCHALTPLAN.png">Schematic</a>
   &nbsp;·&nbsp; <a href="Code/alarm_system/alarm_system.ino">Firmware</a>
@@ -89,7 +89,7 @@ If something doesn't work, the test sketches check each part on its own:
 
 ## 3D model in the browser
 
-**[▶ rexi255.github.io/Arduino-Security-System](https://rexi255.github.io/Arduino-Security-System/)**
+**[▶ bbz-aifs51.github.io/LF7-Projekt_GAS](https://bbz-aifs51.github.io/LF7-Projekt_GAS/)**
 
 An interactive 3D model of the build (three.js), laid out after the schematic.
 It runs the firmware logic from `alarm_system.ino`, so the states, timings,
